@@ -1,0 +1,25 @@
+
+.box.data-v-3ecbf296 {
+		width: 100vw;
+		height: 100vh;
+		background-color: rgba(0, 0, 0, 0.2);
+		position: fixed;
+		top: 0;
+		left: 100vw;
+		z-index: 999;
+		opacity: 0;
+		transition: opacity 0.3s;
+		justify-content: center;
+		align-items: center;
+		display: flex;
+}
+.scroll-view.data-v-3ecbf296 {
+		background-color: #FFFAE7;
+		padding: 14px 18rpx;
+		width: 610rpx;
+		max-height: 60vh;
+}
+.isShow.data-v-3ecbf296 {
+		opacity: 1;
+		left: 0;
+}

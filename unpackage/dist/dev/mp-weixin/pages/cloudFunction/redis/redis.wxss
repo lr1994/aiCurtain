@@ -1,0 +1,37 @@
+
+view{
+	display: flex;
+}
+.pages{
+	flex-direction: column;
+	background-color: #eeeeee;
+	height: 100vh;
+}
+.form{
+	flex-direction: column;
+}
+.item{
+	justify-content: space-between;
+	align-items: center;
+	flex-direction: row;
+	background-color: #FFFFFF;
+	padding: 10px 12px;
+}
+.item .title{
+	color: #555555;
+	width: 80px;
+}
+.item input{
+	width: 600rpx;
+	padding: 5px;
+	border-bottom: solid 1px #edeaf0;
+	margin-right: 10px;
+	font-size: 12px;
+}
+.btn-box{
+	width: 650rpx;
+	margin:16rpx auto;
+}
+radio{
+	margin: 0 10rpx;
+}

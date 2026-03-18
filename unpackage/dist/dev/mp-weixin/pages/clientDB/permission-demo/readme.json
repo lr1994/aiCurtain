@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "角色权限",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "alert-code": "../../../components/alertCode/alertCode",
+    "uni-notice-bar": "../../../uni_modules/uni-notice-bar/components/uni-notice-bar/uni-notice-bar",
+    "page-head": "../../../components/page-head/page-head",
+    "uni-section": "../../../components/uni-section/uni-section",
+    "show-code": "../../../components/show-code/show-code",
+    "set-permission": "../../../components/set-permission/set-permission"
+  }
+}

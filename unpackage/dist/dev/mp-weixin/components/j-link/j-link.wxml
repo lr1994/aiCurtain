@@ -1,0 +1,1 @@
+<text class="underline" bindtap="{{b}}" style="{{'color:' + c}}">{{a}}</text>

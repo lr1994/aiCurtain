@@ -1,0 +1,10 @@
+{
+  "navigationBarTitleText": "unicloud-db demo",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "show-code": "../../../components/show-code/show-code",
+    "unicloud-db": "../../../node-modules/@dcloudio/uni-components/lib/unicloud-db/unicloud-db",
+    "uni-data-checkbox": "../../../uni_modules/uni-data-checkbox/components/uni-data-checkbox/uni-data-checkbox",
+    "uni-number-box": "../../../uni_modules/uni-number-box/components/uni-number-box/uni-number-box"
+  }
+}

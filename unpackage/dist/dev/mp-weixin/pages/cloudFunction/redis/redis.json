@@ -1,0 +1,8 @@
+{
+  "navigationBarTitleText": "扩展能力Redis",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "uni-section": "../../../components/uni-section/uni-section",
+    "alert-code": "../../../components/alertCode/alertCode"
+  }
+}

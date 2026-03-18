@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "字段值域验证",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "my-form": "../../validate-demo/add",
+    "uni-segmented-control": "../../../uni_modules/uni-segmented-control/components/uni-segmented-control/uni-segmented-control",
+    "uni-section": "../../../components/uni-section/uni-section",
+    "uni-list-item": "../../../uni_modules/uni-list/components/uni-list-item/uni-list-item",
+    "uni-list": "../../../uni_modules/uni-list/components/uni-list/uni-list"
+  }
+}

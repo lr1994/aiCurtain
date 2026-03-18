@@ -1,0 +1,1 @@
+<view wx:if="{{a}}" class="box isShow data-v-3ecbf296" bindtap="{{d}}"><scroll-view scroll-x scroll-y catchtap="{{c}}" class="scroll-view data-v-3ecbf296" style="overflow:auto"><show-code wx:if="{{b}}" class="data-v-3ecbf296" u-i="3ecbf296-0" bind:__l="__l" u-p="{{b}}"></show-code></scroll-view></view>

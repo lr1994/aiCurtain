@@ -1,0 +1,65 @@
+
+view.data-v-6d1b39f8,text.data-v-6d1b39f8{
+		display: flex;
+}
+.root.data-v-6d1b39f8{
+		position: fixed;
+		bottom: 20px;
+		width: 750rpx;
+		align-items: center;
+		justify-content: center;
+}
+.box.data-v-6d1b39f8{
+		position: relative;
+		justify-content: space-between;
+		background-color: #ffffff;
+		flex-direction: row;
+		flex-grow: 0;
+		border-radius: 20px;
+		height: 40px;
+		align-items: center;
+		box-shadow: 1px 1px 10px #aaa;
+		z-index: 200;
+		overflow: hidden;
+}
+.roles-item.data-v-6d1b39f8,.active-box.data-v-6d1b39f8{
+		border-radius: 20px;
+		height: 40px;
+		line-height: 40px;
+		color: #aaa;
+		font-size: 16px;
+		transition: color 0.5s;
+		width: 170rpx;
+		justify-content: center;
+		z-index: 2;
+}
+.active.data-v-6d1b39f8{
+		color: #FFFFFF;
+}
+.active-box.data-v-6d1b39f8{
+		position: absolute;
+		background-color: #007AFF;
+		z-index: 1;
+		transition: left 0.3s;
+		font-size: 28rpx;
+		border-radius: 0;
+		height: 39.9px;
+		line-height: 39.9px;
+}
+.guide.data-v-6d1b39f8{
+		position: fixed;
+		top: 0;
+		left: 0;
+		width: 100vw;
+		height: 100vh;
+		opacity: 0.7;
+		background-color: #333333;
+		z-index: 100;
+}
+.guide-img.data-v-6d1b39f8{
+		position: fixed;
+		width: 350rpx;
+		height: 350rpx;
+		bottom: 90px;
+		left: 100rpx;
+}

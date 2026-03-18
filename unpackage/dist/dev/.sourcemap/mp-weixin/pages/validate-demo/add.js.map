@@ -1,0 +1,1 @@
+{"version":3,"file":"add.js","sources":["../../../../安装程序/HBuilderX/plugins/uniapp-cli-vite/uniPage:/cGFnZXMvdmFsaWRhdGUtZGVtby9hZGQudnVl"],"sourcesContent":["import MiniProgramPage from 'D:/workfile/uniapp/simple/aiCurtain/pages/validate-demo/add.vue'\nwx.createPage(MiniProgramPage)"],"names":["MiniProgramPage"],"mappings":";;AACA,GAAG,WAAWA,IAAe,eAAA;"}

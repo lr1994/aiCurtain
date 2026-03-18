@@ -1,0 +1,98 @@
+
+view.data-v-49f96def{
+	display: flex;
+	flex-direction:column;
+}
+.root.data-v-49f96def{
+	padding-top: 200px;
+}
+.box.data-v-49f96def{
+	height: 200px;
+	width: 100vw;
+	position: fixed;
+	justify-content: center;
+	align-items: center;
+	top: 0;
+
+
+
+	left: 0;
+	z-index: 999;
+	background-color: #FFFFFF;
+}
+.code.data-v-49f96def{
+	padding:16px;
+	width:95vw;
+	overflow: auto;
+	font-size: 12px;
+	border: dashed 1px #E5E5E5;
+	background-color:#fffae7;
+	color: #2b8300;
+}
+.info.data-v-49f96def{
+	flex-direction: row;
+	background-color: #FFFFFF;
+	color: #0077CC;
+	font-size: 14px;
+	align-items: center;
+}
+.hasMore.data-v-49f96def{
+	font-size: 12px;
+	color: #DD524D;
+}
+.title.data-v-49f96def{
+	font-size: 12px;
+	min-height:16px;
+	margin-right: 10px;
+}
+.item.data-v-49f96def{
+	flex-direction: column;
+	padding: 15px;
+	border-top: solid 1px #EFEFF4;
+}
+.row.data-v-49f96def{
+	flex-direction: row;
+	align-items: center;
+}
+.msg.data-v-49f96def{
+	font-size: 12px;
+	color: #666666;
+}
+button.data-v-49f96def{
+	margin: 10px;
+}
+@media screen and (max-width: 300px) {
+	/*定义滚动条高宽及背景 高宽分别对应横竖滚动条的尺寸*/
+.data-v-49f96def::-webkit-scrollbar  
+	{  
+	    width: 5px;  
+	    background-color: #fafafa;
+}  
+	  
+	/*定义滚动条轨道 内阴影+圆角*/
+.data-v-49f96def::-webkit-scrollbar-track  
+	{  
+	    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,0.1);  
+	    border-radius: 10px;  
+	    background-color: #fafafa;
+}  
+	  
+	/*定义滑块 内阴影+圆角*/
+.data-v-49f96def::-webkit-scrollbar-thumb  
+	{  
+	    border-radius: 10px;  
+	    -webkit-box-shadow: inset 0 0 6px rgba(0,0,0,.1);  
+	    background-color: #e1e0ed;
+}
+}
+@media screen and (min-width: 300px) {
+.box.data-v-49f96def {
+        height: 300px;
+}
+.code.data-v-49f96def{
+	    height: 260px;
+}
+.root.data-v-49f96def{
+		padding-top: 300px;
+}
+}

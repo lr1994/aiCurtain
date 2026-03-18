@@ -1,0 +1,22 @@
+
+.root.data-v-c6e2e182{
+	position:relative;
+	width: 750rpx;
+	height: 300px;
+	overflow: hidden;
+}
+.posterImg.data-v-c6e2e182,.video.data-v-c6e2e182,.box.data-v-c6e2e182{
+	display: flex;
+	width: 750rpx;
+	height: 300px;
+	position:absolute;
+}
+.posterImg.data-v-c6e2e182{
+}
+.box.data-v-c6e2e182{
+	justify-content: center;
+	align-items: center;
+}
+.playIcon.data-v-c6e2e182{
+	width: 100rpx;
+}

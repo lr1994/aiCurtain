@@ -1,0 +1,7 @@
+{
+  "navigationBarTitleText": "扩展存储-七牛云",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "j-link": "../../components/j-link/j-link"
+  }
+}

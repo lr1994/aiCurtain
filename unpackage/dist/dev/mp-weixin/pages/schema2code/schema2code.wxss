@@ -1,0 +1,50 @@
+
+.code-view.data-v-d1e4428e{
+	height:750rpx;
+	width: 750rpx;
+	padding:5px 8px;
+	overflow: scroll;
+	background-color:#fffae7;
+}
+.code-box.data-v-d1e4428e{
+    white-space:nowrap;
+	color: #447315;
+	font-size: 12px;
+}
+.root.data-v-d1e4428e{
+	flex-direction: column;
+}
+.dashed-box.data-v-d1e4428e{
+	border: dashed 1px #EEEEEE;
+	border-radius: 5px;
+	width: 750rpx;
+	position: relative;
+}
+.uni-title.data-v-d1e4428e {
+	width: 680rpx;
+	margin: 15rpx;
+	font-size:26rpx;
+	padding:20rpx;
+	line-height:1.5;
+	background-color: #FFFFFF;
+}
+.uni-title text.data-v-d1e4428e{
+	font-size:24rpx;
+	color:#888;
+}
+.toForm.data-v-d1e4428e{
+	width: 500rpx;
+	margin:30px 125rpx;
+}
+.uni-title text.link.data-v-d1e4428e{
+	color: #586b95;
+}
+text.tip.data-v-d1e4428e{
+	background-color: #FFFFFF;
+	color: #333;
+	height: 80px;
+	width: 750rpx;
+}
+.showSchemaCode.data-v-d1e4428e{
+	margin-top: 10px;
+}

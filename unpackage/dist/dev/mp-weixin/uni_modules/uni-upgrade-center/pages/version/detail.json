@@ -1,0 +1,12 @@
+{
+  "navigationBarTitleText": "版本信息查看",
+  "usingComponents": {
+    "show-info": "../components/show-info",
+    "uni-easyinput": "../../../uni-easyinput/components/uni-easyinput/uni-easyinput",
+    "uni-forms-item": "../../../uni-forms/components/uni-forms-item/uni-forms-item",
+    "uni-data-checkbox": "../../../uni-data-checkbox/components/uni-data-checkbox/uni-data-checkbox",
+    "uni-file-picker": "../../../uni-file-picker/components/uni-file-picker/uni-file-picker",
+    "uni-dateformat": "../../../uni-dateformat/components/uni-dateformat/uni-dateformat",
+    "uni-forms": "../../../uni-forms/components/uni-forms/uni-forms"
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "navigationBarTitleText": "表级-复杂权限控制",
+  "enablePullDownRefresh": false,
+  "usingComponents": {
+    "alert-code": "../../../components/alertCode/alertCode",
+    "uni-notice-bar": "../../../uni_modules/uni-notice-bar/components/uni-notice-bar/uni-notice-bar",
+    "uni-segmented-control": "../../../uni_modules/uni-segmented-control/components/uni-segmented-control/uni-segmented-control",
+    "show-code": "../../../components/show-code/show-code",
+    "set-permission": "../../../components/set-permission/set-permission"
+  }
+}

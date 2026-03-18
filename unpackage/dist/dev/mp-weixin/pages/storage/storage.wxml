@@ -1,0 +1,1 @@
+<view class="content"><view class="btn-list"><button type="primary" plain bindtap="{{a}}">空间内置云存储</button><text class="tips">演示空间自带的云储存</text><button type="primary" plain bindtap="{{b}}">扩展存储-七牛云</button><text class="tips">演示扩展存储-七牛云</text></view></view>

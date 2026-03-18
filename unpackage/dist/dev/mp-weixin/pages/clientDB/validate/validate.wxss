@@ -1,0 +1,19 @@
+
+.page.data-v-745068e6 {
+		padding-top: 45px;
+}
+.segmented-control.data-v-745068e6 {
+		background-color: #FFFFFF;
+		position: fixed;
+		width: 700rpx;
+		left: 25rpx;
+		top: 0;
+
+
+
+		z-index: 99;
+}
+pre.data-v-745068e6 {
+		padding: 16rpx 26rpx;
+		white-space: pre-wrap;
+}

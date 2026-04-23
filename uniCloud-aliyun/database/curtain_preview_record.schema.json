@@ -1,0 +1,95 @@
+{
+  "bsonType": "object",
+  "required": [
+    "uid",
+    "backgroundFileId",
+    "textureFileId",
+    "prompt",
+    "model",
+    "status",
+    "createTime",
+    "updateTime"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "记录ID，系统自动生成"
+    },
+    "uid": {
+      "description": "用户ID",
+      "bsonType": "string"
+    },
+    "backgroundFileId": {
+      "description": "背景图文件ID",
+      "bsonType": "string"
+    },
+    "backgroundUrl": {
+      "description": "背景图地址",
+      "bsonType": "string"
+    },
+    "textureFileId": {
+      "description": "材质图文件ID",
+      "bsonType": "string"
+    },
+    "textureUrl": {
+      "description": "材质图地址",
+      "bsonType": "string"
+    },
+    "resultFileId": {
+      "description": "结果图文件ID",
+      "bsonType": "string"
+    },
+    "resultUrl": {
+      "description": "结果图地址",
+      "bsonType": "string"
+    },
+    "prompt": {
+      "description": "提示词",
+      "bsonType": "string"
+    },
+    "model": {
+      "description": "模型名称",
+      "bsonType": "string"
+    },
+    "status": {
+      "description": "任务状态",
+      "enum": [
+        {
+          "text": "处理中",
+          "value": "processing"
+        },
+        {
+          "text": "成功",
+          "value": "success"
+        },
+        {
+          "text": "失败",
+          "value": "fail"
+        }
+      ]
+    },
+    "errorMessage": {
+      "description": "失败原因",
+      "bsonType": "string"
+    },
+    "createTime": {
+      "description": "创建时间",
+      "bsonType": "timestamp",
+      "defaultValue": {
+        "$env": "now"
+      }
+    },
+    "updateTime": {
+      "description": "更新时间",
+      "bsonType": "timestamp",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  }
+}

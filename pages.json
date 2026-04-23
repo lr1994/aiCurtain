@@ -3,7 +3,7 @@
     {
       "path": "pages/cloudFunction/cloudFunction",
       "style": {
-        "navigationBarTitleText": "云函数",
+        "navigationBarTitleText": "AI窗帘预览",
         "enablePullDownRefresh": false
       }
     },

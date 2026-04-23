@@ -1,0 +1,63 @@
+{
+  "bsonType": "object",
+  "required": [
+    "uid",
+    "kind",
+    "cloudPath",
+    "ext",
+    "used",
+    "expiresAt",
+    "createTime",
+    "updateTime"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "记录ID，系统自动生成"
+    },
+    "uid": {
+      "description": "所属用户ID",
+      "bsonType": "string"
+    },
+    "kind": {
+      "description": "源文件类型",
+      "bsonType": "string"
+    },
+    "cloudPath": {
+      "description": "服务端签发的云存储路径",
+      "bsonType": "string"
+    },
+    "ext": {
+      "description": "文件扩展名",
+      "bsonType": "string"
+    },
+    "used": {
+      "description": "上传凭证是否已被消费",
+      "bsonType": "bool",
+      "defaultValue": false
+    },
+    "expiresAt": {
+      "description": "上传凭证过期时间",
+      "bsonType": "timestamp"
+    },
+    "createTime": {
+      "description": "创建时间",
+      "bsonType": "timestamp",
+      "defaultValue": {
+        "$env": "now"
+      }
+    },
+    "updateTime": {
+      "description": "更新时间",
+      "bsonType": "timestamp",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  }
+}

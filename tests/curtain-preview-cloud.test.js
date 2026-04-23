@@ -410,6 +410,44 @@ test('generate consumes both source tickets after a successful run', { concurren
 	assert.equal(harness.sourceRecords.tx.used, true);
 });
 
+test('generate accepts local debug url style source file ids', { concurrency: false }, async () => {
+	const harness = createGenerateHarness({
+		tempUrlMap: {
+			'http://127.0.0.1:7000/storage?fileID=cloud%3A%2F%2Fspace%2Fcurtain-preview%2Fsource%2Fuser-1%2Fbackground-1.png': 'https://cdn.example.com/background.png',
+			'http://127.0.0.1:7000/storage?fileID=cloud%3A%2F%2Fspace%2Fcurtain-preview%2Fsource%2Fuser-1%2Ftexture-1.png': 'https://cdn.example.com/texture.png'
+		},
+		previewResponse() {
+			return {
+				status: 200,
+				data: {
+					choices: [
+						{
+							message: {
+								content: [
+									{
+										dataUrl: 'data:image/png;base64,AAAA'
+									}
+								]
+							}
+						}
+					]
+				}
+			};
+		}
+	});
+
+	const response = await harness.cloudFunction.main({
+		uniIdToken: 'token',
+		backgroundFileId: 'http://127.0.0.1:7000/storage?fileID=cloud%3A%2F%2Fspace%2Fcurtain-preview%2Fsource%2Fuser-1%2Fbackground-1.png',
+		textureFileId: 'http://127.0.0.1:7000/storage?fileID=cloud%3A%2F%2Fspace%2Fcurtain-preview%2Fsource%2Fuser-1%2Ftexture-1.png',
+		backgroundSourceId: 'bg',
+		textureSourceId: 'tx',
+		prompt: '将材质自然应用到窗帘区域'
+	});
+
+	assert.equal(response.success, true);
+});
+
 test('history refreshes temp URLs instead of returning stale stored links', { concurrency: false }, async () => {
 	const harness = createHistoryHarness({
 		list: [

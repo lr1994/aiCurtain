@@ -251,6 +251,26 @@ function ensureSourceRecord(record, uid, expectedKind, sourceId) {
 function extractCloudPathFromFileId(fileId) {
 	const normalizedFileId = normalizeString(fileId);
 	const trustedMarker = 'curtain-preview/source/';
+
+	if (/^https?:\/\//i.test(normalizedFileId)) {
+		let parsedUrl;
+		try {
+			parsedUrl = new URL(normalizedFileId);
+		} catch (error) {
+			throw createError('源文件fileID格式无效', 'INVALID_SOURCE_FILE_ID');
+		}
+
+		const fileIdParam = normalizeString(parsedUrl.searchParams.get('fileID') || parsedUrl.searchParams.get('fileId') || parsedUrl.searchParams.get('fileid'));
+		const candidates = [fileIdParam, decodeURIComponent(parsedUrl.pathname || '')].filter(Boolean);
+		for (let index = 0; index < candidates.length; index += 1) {
+			const candidate = candidates[index];
+			const markerIndex = candidate.indexOf(trustedMarker);
+			if (markerIndex >= 0) {
+				return normalizeString(candidate.slice(markerIndex).split(/[?#]/, 1)[0]);
+			}
+		}
+	}
+
 	const markerIndex = normalizedFileId.indexOf(trustedMarker);
 
 	if (markerIndex >= 0) {

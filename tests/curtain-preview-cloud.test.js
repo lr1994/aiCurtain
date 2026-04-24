@@ -448,6 +448,44 @@ test('generate accepts local debug url style source file ids', { concurrency: fa
 	assert.equal(response.success, true);
 });
 
+test('generate accepts bspapp cdn source file urls', { concurrency: false }, async () => {
+	const harness = createGenerateHarness({
+		tempUrlMap: {
+			'https://mp-9473748b-e2e0-4984-9e06-1bf18906fbd8.cdn.bspapp.com/cloudstorage/73e5c5f0-c862-44ab-901e-bababa7dfb93.jpg': 'https://mp-9473748b-e2e0-4984-9e06-1bf18906fbd8.cdn.bspapp.com/cloudstorage/73e5c5f0-c862-44ab-901e-bababa7dfb93.jpg',
+			'https://mp-9473748b-e2e0-4984-9e06-1bf18906fbd8.cdn.bspapp.com/cloudstorage/5c0aa578-d96e-4122-8ac1-8ec49af9c178.jpg': 'https://mp-9473748b-e2e0-4984-9e06-1bf18906fbd8.cdn.bspapp.com/cloudstorage/5c0aa578-d96e-4122-8ac1-8ec49af9c178.jpg'
+		},
+		previewResponse() {
+			return {
+				status: 200,
+				data: {
+					choices: [
+						{
+							message: {
+								content: [
+									{
+										dataUrl: 'data:image/png;base64,AAAA'
+									}
+								]
+							}
+						}
+					]
+				}
+			};
+		}
+	});
+
+	const response = await harness.cloudFunction.main({
+		uniIdToken: 'token',
+		backgroundFileId: 'https://mp-9473748b-e2e0-4984-9e06-1bf18906fbd8.cdn.bspapp.com/cloudstorage/73e5c5f0-c862-44ab-901e-bababa7dfb93.jpg',
+		textureFileId: 'https://mp-9473748b-e2e0-4984-9e06-1bf18906fbd8.cdn.bspapp.com/cloudstorage/5c0aa578-d96e-4122-8ac1-8ec49af9c178.jpg',
+		backgroundSourceId: 'bg',
+		textureSourceId: 'tx',
+		prompt: '将材质自然应用到窗帘区域'
+	});
+
+	assert.equal(response.success, true);
+});
+
 test('history refreshes temp URLs instead of returning stale stored links', { concurrency: false }, async () => {
 	const harness = createHistoryHarness({
 		list: [

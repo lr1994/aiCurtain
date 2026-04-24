@@ -1,6 +1,7 @@
 'use strict';
 
 const uniID = require('uni-id');
+const config = require('./config.js');
 const db = uniCloud.database();
 const dbCmd = db.command;
 const collection = db.collection('curtain_preview_record');
@@ -8,7 +9,8 @@ const sourceCollection = db.collection('curtain_preview_source_file');
 
 const DEFAULT_MODEL = 'gemini-3.1-flash-image-preview';
 const API_URL = 'https://api.apiyi.com/v1/chat/completions';
-const API_KEY = process.env.CURTAIN_PREVIEW_API_KEY || 'YOUR_API_KEY';
+// const API_KEY = process.env.CURTAIN_PREVIEW_API_KEY || 'YOUR_API_KEY';
+const API_KEY = config.API_KEY;
 const MAX_RESULT_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
 const BLOCKED_HOSTNAMES = new Set(['localhost', 'localhost.localdomain', 'local', 'host.docker.internal']);
@@ -22,6 +24,21 @@ function createError(message, code = 'CURTAIN_PREVIEW_GENERATE_FAILED') {
 
 function normalizeString(value) {
 	return typeof value === 'string' ? value.trim() : '';
+}
+
+function isHttpUrl(value) {
+	return /^https?:\/\//i.test(normalizeString(value));
+}
+
+function isLocalDebugHost(hostname) {
+	const normalizedHostname = normalizeString(hostname).toLowerCase();
+	return normalizedHostname === '127.0.0.1' || normalizedHostname === 'localhost';
+}
+
+function isBspAppCloudStorageUrl(parsedUrl) {
+	const hostname = normalizeString(parsedUrl && parsedUrl.hostname).toLowerCase();
+	const pathname = normalizeString(parsedUrl && parsedUrl.pathname);
+	return hostname.endsWith('.cdn.bspapp.com') && pathname.startsWith('/cloudstorage/');
 }
 
 function ensureAllowedImageMimeType(mimeType) {
@@ -248,7 +265,7 @@ function ensureSourceRecord(record, uid, expectedKind, sourceId) {
 	}
 }
 
-function extractCloudPathFromFileId(fileId) {
+function extractCloudPathFromFileId(fileId, expectedCloudPath = '') {
 	const normalizedFileId = normalizeString(fileId);
 	const trustedMarker = 'curtain-preview/source/';
 
@@ -268,6 +285,23 @@ function extractCloudPathFromFileId(fileId) {
 			if (markerIndex >= 0) {
 				return normalizeString(candidate.slice(markerIndex).split(/[?#]/, 1)[0]);
 			}
+		}
+
+		const normalizedExpectedCloudPath = normalizeString(expectedCloudPath);
+		const expectedFileName = normalizeString(normalizedExpectedCloudPath.split('/').pop());
+		const decodedFileReference = decodeURIComponent(normalizedFileId);
+
+		if (isLocalDebugHost(parsedUrl.hostname) && normalizedExpectedCloudPath) {
+			if (decodedFileReference.includes(normalizedExpectedCloudPath)) {
+				return normalizedExpectedCloudPath;
+			}
+			if (expectedFileName && decodedFileReference.includes(expectedFileName)) {
+				return normalizedExpectedCloudPath;
+			}
+		}
+
+		if (isBspAppCloudStorageUrl(parsedUrl) && normalizedExpectedCloudPath) {
+			return normalizedExpectedCloudPath;
 		}
 	}
 
@@ -290,7 +324,7 @@ function extractCloudPathFromFileId(fileId) {
 }
 
 function ensureFileIdMatchesCloudPath(fileId, cloudPath, expectedKind) {
-	const extractedCloudPath = extractCloudPathFromFileId(fileId);
+	const extractedCloudPath = extractCloudPathFromFileId(fileId, cloudPath);
 	const normalizedCloudPath = normalizeString(cloudPath);
 
 	if (extractedCloudPath !== normalizedCloudPath) {
@@ -364,6 +398,23 @@ async function updateRecord(recordId, data) {
 	await collection.doc(recordId).update(data);
 }
 
+async function fetchSourceImageAsDataUrl(url) {
+	const response = await uniCloud.httpclient.request(url, {
+		method: 'GET'
+	});
+	if (response.status >= 400) {
+		throw createError(`下载源图片失败，状态码：${response.status}`, 'SOURCE_IMAGE_FETCH_FAILED');
+	}
+	const contentLength = readContentLength(response.headers);
+	if (contentLength > MAX_RESULT_IMAGE_BYTES) {
+		throw createError(`源图片大小不能超过${MAX_RESULT_IMAGE_BYTES}字节`, 'SOURCE_IMAGE_TOO_LARGE');
+	}
+	const mimeType = ensureAllowedImageMimeType(normalizeString(response.headers && (response.headers['content-type'] || response.headers['Content-Type']) || 'image/png').split(';')[0]);
+	const buffer = Buffer.isBuffer(response.data) ? response.data : Buffer.from(response.data);
+	ensureImageBufferWithinLimit(buffer);
+	return `data:${mimeType};base64,${buffer.toString('base64')}`;
+}
+
 function pickTempUrlItem(result, fileId) {
 	if (!result) {
 		return null;
@@ -388,6 +439,23 @@ function extractTempUrl(item) {
 }
 
 async function getTempUrls(backgroundFileId, textureFileId) {
+	if (isHttpUrl(backgroundFileId) && isHttpUrl(textureFileId)) {
+		const backgroundParsedUrl = new URL(backgroundFileId);
+		const textureParsedUrl = new URL(textureFileId);
+
+		if (isLocalDebugHost(backgroundParsedUrl.hostname) || isLocalDebugHost(textureParsedUrl.hostname)) {
+			return {
+				backgroundUrl: await fetchSourceImageAsDataUrl(backgroundFileId),
+				textureUrl: await fetchSourceImageAsDataUrl(textureFileId)
+			};
+		}
+
+		return {
+			backgroundUrl: backgroundFileId,
+			textureUrl: textureFileId
+		};
+	}
+
 	const result = await uniCloud.getTempFileURL({
 		fileList: [backgroundFileId, textureFileId]
 	});
@@ -522,6 +590,21 @@ function collectImageCandidates(source, bucket) {
 	if (!source) {
 		return;
 	}
+	// --- 新增：处理字符串内容中的 Markdown 图片格式 ---
+    if (typeof source === 'string') {
+        // 匹配 ![image](data:image/xxx;base64,xxxx) 或 ![image](https://xxx)
+        const markdownRegex = /!\[.*?\]\((data:image\/[a-zA-Z0-9.+-]+;base64,[a-zA-Z0-9+/=]+|https?:\/\/[^\s)]+)\)/i;
+        const match = source.match(markdownRegex);
+        if (match && match[1]) {
+            const val = match[1];
+            if (val.startsWith('data:')) {
+                bucket.push({ type: 'dataUrl', value: val });
+            } else {
+                bucket.push({ type: 'url', value: val });
+            }
+        }
+        return;
+    }
 	if (Array.isArray(source)) {
 		source.forEach((item) => collectImageCandidates(item, bucket));
 		return;

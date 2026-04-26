@@ -1,0 +1,8 @@
+{
+  "name": "curtain-pay-order-notify",
+  "version": "1.0.0",
+  "description": "窗帘充值订单支付回调云函数",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC"
+}

@@ -1,0 +1,11 @@
+{
+  "name": "curtain-manual-recharge-apply-create",
+  "version": "1.0.0",
+  "description": "窗帘人工补点申请创建云函数",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uni-id": "file:../../../uni_modules/uni-id/uniCloud/cloudfunctions/common/uni-id"
+  }
+}

@@ -1,0 +1,8 @@
+{
+  "name": "curtain-point-package-list",
+  "version": "1.0.0",
+  "description": "窗帘点数套餐目录云函数",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC"
+}

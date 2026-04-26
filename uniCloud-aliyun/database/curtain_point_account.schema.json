@@ -1,0 +1,57 @@
+{
+  "bsonType": "object",
+  "required": [
+    "uid",
+    "balance",
+    "totalRecharge",
+    "totalConsume",
+    "status",
+    "createTime",
+    "updateTime"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "账户ID，系统自动生成"
+    },
+    "uid": {
+      "description": "用户ID",
+      "bsonType": "string"
+    },
+    "balance": {
+      "description": "当前点数余额",
+      "bsonType": "int"
+    },
+    "totalRecharge": {
+      "description": "累计充值点数",
+      "bsonType": "int"
+    },
+    "totalConsume": {
+      "description": "累计消费点数",
+      "bsonType": "int"
+    },
+    "status": {
+      "description": "账户状态",
+      "bsonType": "bool"
+    },
+    "createTime": {
+      "description": "创建时间",
+      "bsonType": "timestamp",
+      "defaultValue": {
+        "$env": "now"
+      }
+    },
+    "updateTime": {
+      "description": "更新时间",
+      "bsonType": "timestamp",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  }
+}

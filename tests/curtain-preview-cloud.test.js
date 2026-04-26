@@ -6,11 +6,13 @@ const Module = require('node:module');
 const worktreeRoot = path.resolve(__dirname, '..');
 const generateModulePath = path.join(worktreeRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-preview-generate', 'index.js');
 const historyModulePath = path.join(worktreeRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-preview-history', 'index.js');
+const generateConfigModulePath = path.join(worktreeRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-preview-generate', 'config.js');
 
 function loadCloudFunction(modulePath, { uniCloud, uniId, env = {} }) {
 	const originalLoad = Module._load;
 	const originalEnv = {};
 	delete require.cache[modulePath];
+	delete require.cache[generateConfigModulePath];
 	global.uniCloud = uniCloud;
 	Object.keys(env).forEach((key) => {
 		originalEnv[key] = process.env[key];
@@ -63,6 +65,17 @@ function createGenerateHarness(options = {}) {
 	const recordUpdates = [];
 	const sourceUpdates = [];
 	const uploadedFiles = [];
+	const pointAccounts = [
+		{
+			_id: 'account-1',
+			uid: 'user-1',
+			balance: 10,
+			totalRecharge: 10,
+			totalConsume: 0,
+			status: true
+		}
+	];
+	const pointFlows = [];
 	const tempUrlMap = Object.assign({
 		'cloud://space/curtain-preview/source/user-1/background-1.png': 'https://cdn.example.com/background.png',
 		'cloud://space/curtain-preview/source/user-1/texture-1.png': 'https://cdn.example.com/texture.png',
@@ -134,6 +147,42 @@ function createGenerateHarness(options = {}) {
 		}
 	};
 
+	const pointAccountCollection = {
+		where(filter = {}) {
+			return {
+				async get() {
+					return {
+						data: pointAccounts.filter((item) => Object.keys(filter).every((key) => item[key] === filter[key])).map((item) => ({ ...item }))
+					};
+				}
+			};
+		},
+		doc(id) {
+			return {
+				async update(data) {
+					const target = pointAccounts.find((item) => item._id === id);
+					if (!target) {
+						return { updated: 0 };
+					}
+					Object.assign(target, data);
+					return { updated: 1 };
+				}
+			};
+		},
+		async add(data) {
+			const record = Object.assign({ _id: `account-${pointAccounts.length + 1}` }, data);
+			pointAccounts.push(record);
+			return { id: record._id };
+		}
+	};
+
+	const pointFlowCollection = {
+		async add(data) {
+			pointFlows.push(Object.assign({ _id: `flow-${pointFlows.length + 1}` }, data));
+			return { id: `flow-${pointFlows.length}` };
+		}
+	};
+
 	const uniCloud = {
 		database() {
 			return {
@@ -150,6 +199,12 @@ function createGenerateHarness(options = {}) {
 					}
 					if (name === 'curtain_preview_source_file') {
 						return sourceCollection;
+					}
+					if (name === 'curtain_point_account') {
+						return pointAccountCollection;
+					}
+					if (name === 'curtain_point_flow') {
+						return pointFlowCollection;
 					}
 					throw new Error(`unexpected collection: ${name}`);
 				}
@@ -221,9 +276,9 @@ function createGenerateHarness(options = {}) {
 	const cloudFunction = loadCloudFunction(generateModulePath, {
 		uniCloud,
 		uniId,
-		env: {
+		env: Object.assign({
 			CURTAIN_PREVIEW_API_KEY: 'test-api-key'
-		}
+		}, options.env || {})
 	});
 
 	return {
@@ -233,7 +288,9 @@ function createGenerateHarness(options = {}) {
 		recordUpdates,
 		sourceRecords,
 		sourceUpdates,
-		uploadedFiles
+		uploadedFiles,
+		pointAccounts,
+		pointFlows
 	};
 }
 
@@ -484,6 +541,26 @@ test('generate accepts bspapp cdn source file urls', { concurrency: false }, asy
 	});
 
 	assert.equal(response.success, true);
+});
+
+test('generate requires api key from runtime env instead of local plaintext config', { concurrency: false }, async () => {
+	const harness = createGenerateHarness({
+		env: {
+			CURTAIN_PREVIEW_API_KEY: ''
+		}
+	});
+
+	const response = await harness.cloudFunction.main({
+		uniIdToken: 'token',
+		backgroundFileId: 'cloud://space/curtain-preview/source/user-1/background-1.png',
+		textureFileId: 'cloud://space/curtain-preview/source/user-1/texture-1.png',
+		backgroundSourceId: 'bg',
+		textureSourceId: 'tx',
+		prompt: '将材质自然应用到窗帘区域'
+	});
+
+	assert.equal(response.success, false);
+	assert.equal(response.errCode, 'API_KEY_NOT_CONFIGURED');
 });
 
 test('history refreshes temp URLs instead of returning stale stored links', { concurrency: false }, async () => {

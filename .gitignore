@@ -1,3 +1,28 @@
 .worktrees/
 
 uniCloud-aliyun/cloudfunctions/**/config.js
+
+# HBuilderX 本地工程配置
+.hbuilderx/
+
+# uni-app / 微信小程序编译产物
+unpackage/
+
+# 本地依赖目录
+node_modules/
+uniCloud-aliyun/cloudfunctions/**/node_modules/
+
+# 本地环境变量文件
+.env
+.env.*
+!.env.example
+!.env.*.example
+
+# 日志与临时文件
+*.log
+*.tmp
+*.temp
+
+# 系统生成文件
+.DS_Store
+Thumbs.db

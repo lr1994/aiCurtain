@@ -1,0 +1,84 @@
+{
+  "bsonType": "object",
+  "required": [
+    "categoryKey",
+    "categoryName",
+    "title",
+    "sort",
+    "status",
+    "createTime",
+    "updateTime"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "样板间ID，系统自动生成"
+    },
+    "categoryKey": {
+      "description": "分类标识",
+      "bsonType": "string"
+    },
+    "categoryName": {
+      "description": "分类名称",
+      "bsonType": "string"
+    },
+    "title": {
+      "description": "样板间标题",
+      "bsonType": "string"
+    },
+    "coverUrl": {
+      "description": "封面图地址",
+      "bsonType": "string"
+    },
+    "coverFileId": {
+      "description": "封面图云存储fileId",
+      "bsonType": "string"
+    },
+    "backgroundImage": {
+      "description": "背景图地址",
+      "bsonType": "string"
+    },
+    "backgroundFileId": {
+      "description": "背景图云存储fileId",
+      "bsonType": "string"
+    },
+    "tags": {
+      "description": "标签",
+      "bsonType": "array",
+      "items": {
+        "bsonType": "string"
+      }
+    },
+    "defaultConfig": {
+      "description": "推荐参数",
+      "bsonType": "object"
+    },
+    "sort": {
+      "description": "排序值",
+      "bsonType": "int"
+    },
+    "status": {
+      "description": "是否启用",
+      "bsonType": "bool"
+    },
+    "createTime": {
+      "description": "创建时间",
+      "bsonType": "timestamp",
+      "defaultValue": {
+        "$env": "now"
+      }
+    },
+    "updateTime": {
+      "description": "更新时间",
+      "bsonType": "timestamp",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  }
+}

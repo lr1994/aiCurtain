@@ -1,0 +1,11 @@
+{
+  "name": "curtain-scene-create-source-ticket",
+  "version": "1.0.0",
+  "description": "样板间背景图可信来源凭证云函数",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uni-id": "file:../../../uni_modules/uni-id/uniCloud/cloudfunctions/common/uni-id"
+  }
+}

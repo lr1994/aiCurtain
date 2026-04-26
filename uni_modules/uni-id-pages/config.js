@@ -19,10 +19,11 @@ export default {
     // #ifdef APP
     'univerify',
     // #endif
-    // #ifndef MP-HARMONY
-    'weixin',
-    // #endif
     'username',
+    // #ifndef MP-HARMONY
+    // 暂未完成微信登录配置，先关闭微信登录入口，避免运行时报缺少 appid
+    // 'weixin',
+    // #endif
     // #ifdef APP
     'apple',
     // #endif

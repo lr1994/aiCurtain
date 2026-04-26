@@ -6,15 +6,16 @@ const db = uniCloud.database();
 const dbCmd = db.command;
 const collection = db.collection('curtain_preview_record');
 const sourceCollection = db.collection('curtain_preview_source_file');
+const pointAccountCollection = db.collection('curtain_point_account');
+const pointFlowCollection = db.collection('curtain_point_flow');
 
 const DEFAULT_MODEL = 'gemini-3.1-flash-image-preview';
 const API_URL = 'https://api.apiyi.com/v1/chat/completions';
-// const API_KEY = process.env.CURTAIN_PREVIEW_API_KEY || 'YOUR_API_KEY';
-const API_KEY = config.API_KEY;
 const MAX_RESULT_IMAGE_BYTES = 5 * 1024 * 1024;
 const ALLOWED_IMAGE_MIME_TYPES = new Set(['image/png', 'image/jpeg', 'image/webp', 'image/gif']);
 const BLOCKED_HOSTNAMES = new Set(['localhost', 'localhost.localdomain', 'local', 'host.docker.internal']);
 const BLOCKED_HOSTNAME_SUFFIXES = ['.local', '.internal', '.intranet', '.lan', '.home', '.corp'];
+const RENDER_POINTS_COST = 1;
 
 function createError(message, code = 'CURTAIN_PREVIEW_GENERATE_FAILED') {
 	const error = new Error(message);
@@ -385,6 +386,7 @@ async function createRecord(data) {
 		textureFileId: data.textureFileId,
 		prompt: data.prompt,
 		model: data.model || DEFAULT_MODEL,
+		pointsCost: RENDER_POINTS_COST,
 		status: 'processing'
 	};
 	const result = await collection.add(record);
@@ -396,6 +398,60 @@ async function createRecord(data) {
 
 async function updateRecord(recordId, data) {
 	await collection.doc(recordId).update(data);
+}
+
+async function ensurePointAccount(uid) {
+	const found = await pointAccountCollection.where({ uid }).get();
+	if (Array.isArray(found.data) && found.data.length > 0) {
+		return found.data[0];
+	}
+	const account = {
+		uid,
+		balance: 0,
+		totalRecharge: 0,
+		totalConsume: 0,
+		status: true
+	};
+	const result = await pointAccountCollection.add(account);
+	return {
+		_id: result.id,
+		...account
+	};
+}
+
+async function ensureEnoughPoints(uid, amount) {
+	const account = await ensurePointAccount(uid);
+	if (Number(account.balance || 0) < Number(amount || 0)) {
+		throw createError('点数不足，请先充值后再生成', 'POINTS_NOT_ENOUGH');
+	}
+	return account;
+}
+
+async function consumePointsAfterRenderSuccess(uid, renderRecordId, amount) {
+	const account = await ensurePointAccount(uid);
+	const currentBalance = Number(account.balance || 0);
+	const consumeAmount = Number(amount || 0);
+	if (currentBalance < consumeAmount) {
+		throw createError('点数不足，无法完成扣减', 'POINTS_NOT_ENOUGH');
+	}
+	const balanceAfter = currentBalance - consumeAmount;
+
+	await pointAccountCollection.doc(account._id).update({
+		balance: balanceAfter,
+		totalConsume: Number(account.totalConsume || 0) + consumeAmount
+	});
+	await pointFlowCollection.add({
+		uid,
+		type: 'consume',
+		amount: consumeAmount,
+		balanceAfter,
+		bizType: 'render',
+		bizId: renderRecordId,
+		remark: '窗帘智能渲染成功扣点',
+		status: true
+	});
+
+	return balanceAfter;
 }
 
 async function fetchSourceImageAsDataUrl(url) {
@@ -521,20 +577,24 @@ function buildPayload({ backgroundUrl, textureUrl, prompt, model }) {
 }
 
 function ensureApiKey() {
-	if (!API_KEY || API_KEY === 'YOUR_API_KEY') {
+	const apiKey = normalizeString(config.API_KEY || (typeof config.getApiKey === 'function' ? config.getApiKey() : ''));
+
+	if (!apiKey || apiKey === 'YOUR_API_KEY') {
 		throw createError('服务端未配置预览图生成API_KEY', 'API_KEY_NOT_CONFIGURED');
 	}
+
+	return apiKey;
 }
 
 async function requestPreview(payload) {
-	ensureApiKey();
+	const apiKey = ensureApiKey();
 	const response = await uniCloud.httpclient.request(API_URL, {
 		method: 'POST',
 		contentType: 'json',
 		dataType: 'json',
 		timeout: 60000,
 		headers: {
-			Authorization: `Bearer ${API_KEY}`
+			Authorization: `Bearer ${apiKey}`
 		},
 		data: payload
 	});
@@ -764,6 +824,7 @@ exports.main = async (event) => {
 		const input = validateInput(event || {});
 		input.uid = auth.uid;
 		const sourceRecords = await validateSourceOwnership(input, auth.uid);
+		await ensureEnoughPoints(auth.uid, RENDER_POINTS_COST);
 		await consumeSourceTickets([sourceRecords.backgroundRecord, sourceRecords.textureRecord]);
 		const created = await createRecord(input);
 		recordId = created.recordId;
@@ -789,6 +850,7 @@ exports.main = async (event) => {
 			textureFileId: input.textureFileId,
 			prompt: input.prompt,
 			model: input.model,
+			pointsCost: RENDER_POINTS_COST,
 			backgroundUrl,
 			textureUrl,
 			resultFileId: uploadResult.resultFileId,
@@ -797,6 +859,7 @@ exports.main = async (event) => {
 			errorMessage: ''
 		};
 
+		await consumePointsAfterRenderSuccess(auth.uid, recordId, RENDER_POINTS_COST);
 		await updateRecord(recordId, successData);
 		return buildSuccessResponse(recordId, successData);
 	} catch (error) {

@@ -1,7 +1,31 @@
 "use strict";
 const common_vendor = require("../../common/vendor.js");
+const common_curtainApp_frontend_renderSession = require("../../common/curtain-app/frontend/render-session.js");
+const common_curtainApp_frontend_pageModels = require("../../common/curtain-app/frontend/page-models.js");
+const common_curtainApp_frontend_pointSummary = require("../../common/curtain-app/frontend/point-summary.js");
+const {
+  readSceneSelection,
+  clearSceneSelection,
+  buildRenderDraft,
+  saveRenderResult
+} = common_curtainApp_frontend_renderSession.renderSession;
+const { buildRenderHomeViewModel } = common_curtainApp_frontend_pageModels.pageModels;
+const {
+  createEmptyPointSummary,
+  normalizePointSummary
+} = common_curtainApp_frontend_pointSummary.pointSummaryModels;
 const DEFAULT_MODEL = "gemini-3.1-flash-image-preview";
 const DEFAULT_PROMPT = "将材质自然应用到窗帘区域，保持原场景结构、褶皱走向与真实光影，输出真实可用的窗帘预览图";
+const PLEAT_OPTIONS = [
+  { value: "1.8", label: "1.8倍" },
+  { value: "2.0", label: "2.0倍" },
+  { value: "2.2", label: "2.2倍" }
+];
+const HEAD_STYLE_OPTIONS = [
+  { value: "simple", label: "简约韩式" },
+  { value: "wave", label: "波浪帘头" },
+  { value: "box", label: "盒型帘头" }
+];
 function createDefaultForm() {
   return {
     backgroundFileId: "",
@@ -14,7 +38,18 @@ function createDefaultForm() {
     model: DEFAULT_MODEL
   };
 }
+function createDefaultStyleForm() {
+  return {
+    pleatMultiple: "2.0",
+    headStyle: "simple",
+    includeSheer: true
+  };
+}
 const _sfc_main = {
+  created() {
+    this.syncLoginState();
+    this.pointSummaryLoading = this.hasLogin;
+  },
   data() {
     return {
       hasLogin: false,
@@ -24,7 +59,13 @@ const _sfc_main = {
       uploadingField: "",
       resultUrl: "",
       historyList: [],
-      form: createDefaultForm()
+      pointSummary: createEmptyPointSummary(),
+      pointSummaryLoading: false,
+      pointSummaryError: "",
+      form: createDefaultForm(),
+      styleForm: createDefaultStyleForm(),
+      pleatOptions: PLEAT_OPTIONS,
+      headStyleOptions: HEAD_STYLE_OPTIONS
     };
   },
   computed: {
@@ -33,29 +74,66 @@ const _sfc_main = {
     },
     promptLength() {
       return this.normalizeString(this.form.prompt).length;
+    },
+    homeView() {
+      return buildRenderHomeViewModel({
+        hasLogin: this.hasLogin,
+        balance: this.pointSummary.balance,
+        generating: this.generating,
+        canGenerate: this.canGenerate,
+        pointSummaryLoading: this.pointSummaryLoading,
+        pointSummaryError: this.pointSummaryError
+      });
+    },
+    selectedPleatIndex() {
+      const index = this.pleatOptions.findIndex((item) => item.value === this.styleForm.pleatMultiple);
+      return index < 0 ? 1 : index;
+    },
+    selectedHeadStyleIndex() {
+      const index = this.headStyleOptions.findIndex((item) => item.value === this.styleForm.headStyle);
+      return index < 0 ? 0 : index;
+    },
+    currentPleatLabel() {
+      return (this.pleatOptions[this.selectedPleatIndex] || {}).label || "2.0倍";
+    },
+    currentHeadStyleLabel() {
+      return (this.headStyleOptions[this.selectedHeadStyleIndex] || {}).label || "简约韩式";
     }
   },
   onLoad() {
-    this.syncLoginState();
-    if (this.hasLogin) {
-      this.loadHistory({
-        silent: true
-      });
-    }
+    this.handlePageLoad();
   },
   onShow() {
-    const hadLogin = this.hasLogin;
-    this.syncLoginState();
-    if (this.hasLogin && (!hadLogin || this.historyList.length === 0)) {
-      this.loadHistory({
-        silent: true
-      });
-    }
-    if (!this.hasLogin) {
-      this.historyList = [];
-    }
+    this.handlePageShow();
   },
   methods: {
+    handlePageLoad() {
+      this.syncLoginState();
+      if (this.hasLogin) {
+        this.loadHistory({
+          silent: true
+        });
+      }
+    },
+    handlePageShow() {
+      const hadLogin = this.hasLogin;
+      this.syncLoginState();
+      this.applySceneSelection();
+      if (this.hasLogin && (!hadLogin || this.historyList.length === 0)) {
+        this.loadHistory({
+          silent: true
+        });
+      }
+      if (this.hasLogin) {
+        this.loadPointSummary();
+      }
+      if (!this.hasLogin) {
+        this.historyList = [];
+        this.pointSummary = createEmptyPointSummary();
+        this.pointSummaryLoading = false;
+        this.pointSummaryError = "";
+      }
+    },
     normalizeString(value) {
       return typeof value === "string" ? value.trim() : "";
     },
@@ -90,10 +168,151 @@ const _sfc_main = {
       return false;
     },
     goLogin() {
-      const redirectUrl = encodeURIComponent("/pages/cloudFunction/cloudFunction");
+      const redirectUrl = encodeURIComponent("/pages/render/index");
       common_vendor.index.navigateTo({
         url: `/uni_modules/uni-id-pages/pages/login/login-withoutpwd?uniIdRedirectUrl=${redirectUrl}`
       });
+    },
+    openProfile() {
+      if (!this.hasLogin) {
+        this.goLogin();
+        return;
+      }
+      common_vendor.index.navigateTo({
+        url: "/uni_modules/uni-id-pages/pages/userinfo/userinfo"
+      });
+    },
+    goRecharge() {
+      if (!this.hasLogin) {
+        this.goLogin();
+        return;
+      }
+      common_vendor.index.navigateTo({
+        url: "/pages/profile/recharge"
+      });
+    },
+    handlePleatChange(event) {
+      const index = Number(event && event.detail && event.detail.value || 0);
+      const target = this.pleatOptions[index];
+      if (target) {
+        this.styleForm.pleatMultiple = target.value;
+      }
+    },
+    handleHeadStyleChange(event) {
+      const index = Number(event && event.detail && event.detail.value || 0);
+      const target = this.headStyleOptions[index];
+      if (target) {
+        this.styleForm.headStyle = target.value;
+      }
+    },
+    toggleIncludeSheer() {
+      this.styleForm.includeSheer = !this.styleForm.includeSheer;
+    },
+    applySceneSelection() {
+      return this.prepareSceneSelection();
+    },
+    async prepareSceneSelection() {
+      const scene = readSceneSelection();
+      const draft = buildRenderDraft(scene);
+      const hasDraft = !!(draft.sceneTemplateId || draft.backgroundImage || draft.textureImage || draft.prompt);
+      if (!hasDraft) {
+        return;
+      }
+      this.form.backgroundFileId = "";
+      this.form.backgroundSourceId = "";
+      this.form.backgroundUrl = draft.backgroundImage;
+      this.form.textureUrl = draft.textureImage || "";
+      this.form.prompt = draft.prompt || DEFAULT_PROMPT;
+      this.form.model = draft.model || DEFAULT_MODEL;
+      this.form.textureFileId = "";
+      this.form.textureSourceId = "";
+      this.styleForm = {
+        pleatMultiple: draft.config && draft.config.pleatMultiple || "2.0",
+        headStyle: draft.config && draft.config.headStyle || "simple",
+        includeSheer: typeof (draft.config && draft.config.includeSheer) === "boolean" ? draft.config.includeSheer : true
+      };
+      this.resultUrl = "";
+      if (!draft.backgroundFileId) {
+        clearSceneSelection();
+        common_vendor.index.showToast({
+          title: draft.textureImage || draft.prompt ? "作品信息已回填，如需生成请重新上传原图" : "样板间已回填，如需生成请补传背景图原图",
+          icon: "none",
+          duration: 2600
+        });
+        return;
+      }
+      if (!this.hasLogin) {
+        common_vendor.index.showToast({
+          title: "样板间已回填，登录后可直接生成",
+          icon: "none",
+          duration: 2600
+        });
+        return;
+      }
+      common_vendor.index.showLoading({
+        title: "同步样板间..."
+      });
+      try {
+        const res = await common_vendor._r.callFunction({
+          name: "curtain-scene-create-source-ticket",
+          data: {
+            sceneTemplateId: draft.sceneTemplateId
+          }
+        });
+        const result = res.result || {};
+        if (!result.success || !result.sourceId || !result.backgroundFileId) {
+          throw new Error(result.message || "样板间背景图准备失败");
+        }
+        this.form.backgroundFileId = this.normalizeString(result.backgroundFileId);
+        this.form.backgroundSourceId = this.normalizeString(result.sourceId);
+        if (this.normalizeString(result.backgroundUrl)) {
+          this.form.backgroundUrl = this.normalizeString(result.backgroundUrl);
+        }
+        clearSceneSelection();
+        common_vendor.index.showToast({
+          title: "样板间已回填，可继续上传材质图",
+          icon: "none",
+          duration: 2200
+        });
+      } catch (error) {
+        this.form.backgroundFileId = "";
+        this.form.backgroundSourceId = "";
+        common_vendor.index.showToast({
+          title: this.normalizeString(error.message) || "样板间已回填，请补传背景原图",
+          icon: "none",
+          duration: 2800
+        });
+        clearSceneSelection();
+      } finally {
+        common_vendor.index.hideLoading();
+      }
+    },
+    async loadPointSummary() {
+      this.pointSummaryLoading = true;
+      this.pointSummaryError = "";
+      try {
+        const res = await common_vendor._r.callFunction({
+          name: "curtain-point-summary",
+          data: {}
+        });
+        const result = res.result || {};
+        if (!result.success) {
+          throw new Error(result.message || "点数账户加载失败");
+        }
+        this.pointSummary = normalizePointSummary(result);
+        this.pointSummaryError = "";
+      } catch (error) {
+        const errorMessage = this.normalizeString(error && error.message) || "点数账户加载失败";
+        this.pointSummary = createEmptyPointSummary();
+        this.pointSummaryError = errorMessage;
+        common_vendor.index.showToast({
+          title: errorMessage,
+          icon: "none",
+          duration: 2500
+        });
+      } finally {
+        this.pointSummaryLoading = false;
+      }
     },
     getFieldConfig(field) {
       return field === "background" ? {
@@ -121,6 +340,7 @@ const _sfc_main = {
     },
     resetForm() {
       this.form = createDefaultForm();
+      this.styleForm = createDefaultStyleForm();
       this.resultUrl = "";
     },
     chooseImage(field) {
@@ -144,7 +364,6 @@ const _sfc_main = {
     },
     async uploadImage(field, filePath) {
       const config = this.getFieldConfig(field);
-      common_vendor.index.__f__("log", "at pages/cloudFunction/cloudFunction.vue:274", "uploadImage", field, filePath);
       const ext = this.getFileExtension(filePath);
       this.uploadingField = field;
       common_vendor.index.showLoading({
@@ -204,6 +423,13 @@ const _sfc_main = {
         title: "生成中..."
       });
       try {
+        const detailPayload = {
+          backgroundUrl: this.normalizeString(this.form.backgroundUrl),
+          textureUrl: this.normalizeString(this.form.textureUrl),
+          prompt: this.normalizeString(this.form.prompt),
+          model: this.form.model,
+          status: "success"
+        };
         const res = await common_vendor._r.callFunction({
           name: "curtain-preview-generate",
           data: {
@@ -220,16 +446,23 @@ const _sfc_main = {
           throw new Error(result.message || "生成失败");
         }
         this.resultUrl = this.normalizeString(result.resultUrl);
+        saveRenderResult({
+          ...detailPayload,
+          recordId: this.normalizeString(result.recordId),
+          resultUrl: this.normalizeString(result.resultUrl),
+          coverUrl: this.normalizeString(result.resultUrl),
+          errorMessage: ""
+        });
         this.form.backgroundFileId = "";
         this.form.backgroundSourceId = "";
         this.form.textureFileId = "";
         this.form.textureSourceId = "";
+        await this.loadPointSummary();
         await this.loadHistory({
           silent: true
         });
-        common_vendor.index.showToast({
-          title: "生成成功",
-          icon: "none"
+        common_vendor.index.navigateTo({
+          url: "/pages/render/result"
         });
       } catch (error) {
         const errorMessage = this.normalizeString(error.message);
@@ -381,50 +614,64 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.t($data.hasLogin ? "已登录，可生成并查看私有历史" : "未登录，生成前请先登录"),
-    b: common_vendor.n($data.hasLogin ? "status-chip--online" : "status-chip--offline"),
-    c: !$data.hasLogin
-  }, !$data.hasLogin ? {
-    d: common_vendor.o((...args) => $options.goLogin && $options.goLogin(...args), "73")
-  } : {}, {
-    e: $data.form.backgroundUrl
+    a: common_vendor.t($options.homeView.brandText),
+    b: common_vendor.t($data.hasLogin ? "我" : "登"),
+    c: common_vendor.o((...args) => $options.openProfile && $options.openProfile(...args), "dd"),
+    d: common_vendor.t($options.homeView.greetingText),
+    e: common_vendor.t($options.homeView.pointsText),
+    f: common_vendor.t($options.homeView.loginHintText),
+    g: $data.form.backgroundUrl
   }, $data.form.backgroundUrl ? {
-    f: $data.form.backgroundUrl
+    h: $data.form.backgroundUrl
   } : {}, {
-    g: common_vendor.o(($event) => $options.chooseImage("background"), "c0"),
-    h: common_vendor.o(($event) => $options.chooseImage("background"), "99"),
-    i: $data.form.backgroundUrl
+    i: common_vendor.t($data.form.backgroundUrl ? "重新上传" : "选择图片"),
+    j: common_vendor.o(($event) => $options.chooseImage("background"), "b8"),
+    k: $data.form.backgroundUrl
   }, $data.form.backgroundUrl ? {
-    j: common_vendor.o(($event) => $options.clearImage("background"), "cf")
+    l: common_vendor.o(($event) => $options.clearImage("background"), "bd")
   } : {}, {
-    k: $data.form.textureUrl
+    m: common_vendor.o(($event) => $options.chooseImage("background"), "8f"),
+    n: $data.form.textureUrl
   }, $data.form.textureUrl ? {
-    l: $data.form.textureUrl
-  } : {}, {
-    m: common_vendor.o(($event) => $options.chooseImage("texture"), "19"),
-    n: common_vendor.o(($event) => $options.chooseImage("texture"), "31"),
     o: $data.form.textureUrl
+  } : {}, {
+    p: common_vendor.t($data.form.textureUrl ? "重新上传" : "选择图片"),
+    q: common_vendor.o(($event) => $options.chooseImage("texture"), "7d"),
+    r: $data.form.textureUrl
   }, $data.form.textureUrl ? {
-    p: common_vendor.o(($event) => $options.clearImage("texture"), "3e")
+    s: common_vendor.o(($event) => $options.clearImage("texture"), "de")
   } : {}, {
-    q: common_vendor.t($options.promptLength),
-    r: $data.form.prompt,
-    s: common_vendor.o(($event) => $data.form.prompt = $event.detail.value, "40"),
-    t: common_vendor.t($data.generating ? "生成中..." : "开始生成"),
-    v: $data.generating,
-    w: !$options.canGenerate,
-    x: common_vendor.o((...args) => $options.submitGenerate && $options.submitGenerate(...args), "4b"),
-    y: $data.generating || !!$data.uploadingField,
-    z: common_vendor.o((...args) => $options.resetForm && $options.resetForm(...args), "cb"),
-    A: $data.resultUrl
+    t: common_vendor.o(($event) => $options.chooseImage("texture"), "47"),
+    v: common_vendor.t($options.currentPleatLabel),
+    w: $data.pleatOptions,
+    x: $options.selectedPleatIndex,
+    y: common_vendor.o((...args) => $options.handlePleatChange && $options.handlePleatChange(...args), "d9"),
+    z: common_vendor.t($options.currentHeadStyleLabel),
+    A: $data.headStyleOptions,
+    B: $options.selectedHeadStyleIndex,
+    C: common_vendor.o((...args) => $options.handleHeadStyleChange && $options.handleHeadStyleChange(...args), "1d"),
+    D: $data.styleForm.includeSheer
+  }, $data.styleForm.includeSheer ? {} : {}, {
+    E: common_vendor.n($data.styleForm.includeSheer ? "checkbox-box--checked" : ""),
+    F: common_vendor.o((...args) => $options.toggleIncludeSheer && $options.toggleIncludeSheer(...args), "6e"),
+    G: common_vendor.t($options.promptLength),
+    H: $data.form.prompt,
+    I: common_vendor.o(($event) => $data.form.prompt = $event.detail.value, "b9"),
+    J: common_vendor.t($options.homeView.submitText),
+    K: $data.generating,
+    L: $options.homeView.submitDisabled,
+    M: common_vendor.o((...args) => $options.submitGenerate && $options.submitGenerate(...args), "ba"),
+    N: common_vendor.o((...args) => $options.goRecharge && $options.goRecharge(...args), "1c"),
+    O: $data.resultUrl
   }, $data.resultUrl ? {
-    B: $data.resultUrl,
-    C: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "ba")
+    P: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "fb"),
+    Q: $data.resultUrl,
+    R: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "8a")
   } : {}, {
-    D: common_vendor.o((...args) => $options.refreshHistory && $options.refreshHistory(...args), "43"),
-    E: !$data.hasLogin
+    S: common_vendor.o((...args) => $options.refreshHistory && $options.refreshHistory(...args), "1a"),
+    T: !$data.hasLogin
   }, !$data.hasLogin ? {} : $data.historyLoading ? {} : $data.historyList.length === 0 ? {} : {
-    H: common_vendor.f($data.historyList, (item, k0, i0) => {
+    W: common_vendor.f($data.historyList, (item, k0, i0) => {
       return {
         a: item.resultUrl || item.backgroundUrl || item.textureUrl,
         b: common_vendor.t($options.formatStatus(item.status)),
@@ -438,10 +685,10 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     })
   }, {
-    F: $data.historyLoading,
-    G: $data.historyList.length === 0
+    U: $data.historyLoading,
+    V: $data.historyList.length === 0
   });
 }
-const MiniProgramPage = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
-wx.createPage(MiniProgramPage);
+const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);
+wx.createComponent(Component);
 //# sourceMappingURL=../../../.sourcemap/mp-weixin/pages/cloudFunction/cloudFunction.js.map

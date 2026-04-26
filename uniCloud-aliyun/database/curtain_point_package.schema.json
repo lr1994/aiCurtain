@@ -1,0 +1,62 @@
+{
+  "bsonType": "object",
+  "required": [
+    "title",
+    "priceFen",
+    "points",
+    "bonusPoints",
+    "sort",
+    "status",
+    "createTime",
+    "updateTime"
+  ],
+  "permission": {
+    "read": false,
+    "create": false,
+    "update": false,
+    "delete": false
+  },
+  "properties": {
+    "_id": {
+      "description": "套餐ID，系统自动生成"
+    },
+    "title": {
+      "description": "套餐名称",
+      "bsonType": "string"
+    },
+    "priceFen": {
+      "description": "价格，单位分",
+      "bsonType": "int"
+    },
+    "points": {
+      "description": "基础点数",
+      "bsonType": "int"
+    },
+    "bonusPoints": {
+      "description": "赠送点数",
+      "bsonType": "int"
+    },
+    "sort": {
+      "description": "排序值",
+      "bsonType": "int"
+    },
+    "status": {
+      "description": "是否启用",
+      "bsonType": "bool"
+    },
+    "createTime": {
+      "description": "创建时间",
+      "bsonType": "timestamp",
+      "defaultValue": {
+        "$env": "now"
+      }
+    },
+    "updateTime": {
+      "description": "更新时间",
+      "bsonType": "timestamp",
+      "forceDefaultValue": {
+        "$env": "now"
+      }
+    }
+  }
+}

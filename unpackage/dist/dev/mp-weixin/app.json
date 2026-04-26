@@ -1,39 +1,13 @@
 {
   "pages": [
-    "pages/cloudFunction/cloudFunction",
-    "pages/cloudObject/cloudObject",
-    "pages/secure-network/cloud-function",
-    "pages/secure-network/cloud-object",
-    "pages/test/test",
-    "pages/clientDB/unicloud-db-demo/unicloud-db-demo",
-    "pages/clientDB/demo/demo",
-    "pages/clientDB/permission-table-simple/permission-table-simple",
-    "pages/clientDB/permission-table-compound/permission-table-compound",
-    "pages/clientDB/clientDB",
-    "pages/user-info/add",
-    "pages/user-info/edit",
-    "pages/user-info/list",
-    "pages/user-info/detail",
-    "pages/storage/storage",
-    "pages/storage/space-storage",
-    "pages/storage/ext-storage-qiniu",
-    "pages/schema2code/schema2code",
-    "pages/clientDB/permission/permission",
-    "pages/clientDB/permission-demo/permission-demo",
-    "pages/clientDB/permission-demo/readme",
-    "pages/clientDB/permission-field-simple/permission-field-simple",
-    "pages/clientDB/clientDB-api/clientDB-api",
-    "pages/clientDB/validate/validate",
-    "pages/validate-demo/add",
-    "pages/validate-demo/edit",
-    "pages/validate-demo/list",
-    "pages/validate-demo/detail",
-    "pages/webview/webview",
-    "uni_modules/uni-upgrade-center-app/pages/upgrade-popup",
-    "pages/cloudFunction/redis/redis",
-    "uni_modules/uni-upgrade-center/pages/version/list",
-    "uni_modules/uni-upgrade-center/pages/version/add",
-    "uni_modules/uni-upgrade-center/pages/version/detail",
+    "pages/render/index",
+    "pages/showroom/index",
+    "pages/works/index",
+    "pages/profile/index",
+    "pages/render/result",
+    "pages/profile/points",
+    "pages/profile/orders",
+    "pages/profile/recharge",
     "uni_modules/uni-id-pages/pages/register/register",
     "uni_modules/uni-id-pages/pages/login/login-withoutpwd",
     "uni_modules/uni-id-pages/pages/login/login-withpwd",
@@ -53,45 +27,39 @@
   ],
   "window": {
     "navigationBarTextStyle": "black",
-    "navigationBarTitleText": "uni-app",
-    "navigationBarBackgroundColor": "#F8F8F8",
-    "backgroundColor": "#F8F8F8"
+    "navigationBarTitleText": "AI窗帘",
+    "navigationBarBackgroundColor": "#f8f3ee",
+    "backgroundColor": "#f8f3ee"
   },
   "tabBar": {
-    "color": "#7A7E83",
-    "selectedColor": "#1296db",
+    "color": "#867461",
+    "selectedColor": "#9d6b3d",
     "borderStyle": "black",
-    "backgroundColor": "#ffffff",
+    "backgroundColor": "#fffaf5",
     "list": [
       {
-        "pagePath": "pages/cloudFunction/cloudFunction",
+        "pagePath": "pages/render/index",
         "iconPath": "static/tabbar/fn.png",
         "selectedIconPath": "static/tabbar/fn1.png",
-        "text": "云函数"
+        "text": "智能渲染"
       },
       {
-        "pagePath": "pages/cloudObject/cloudObject",
-        "iconPath": "static/tabbar/obj.png",
-        "selectedIconPath": "static/tabbar/obj1.png",
-        "text": "云对象"
-      },
-      {
-        "pagePath": "pages/storage/storage",
+        "pagePath": "pages/showroom/index",
         "iconPath": "static/tabbar/storage.png",
         "selectedIconPath": "static/tabbar/storage1.png",
-        "text": "云存储"
+        "text": "经典样板间"
       },
       {
-        "pagePath": "pages/clientDB/clientDB",
+        "pagePath": "pages/works/index",
         "iconPath": "static/tabbar/yun.png",
         "selectedIconPath": "static/tabbar/yun1.png",
-        "text": "clientDB"
+        "text": "我的作品"
       },
       {
-        "pagePath": "pages/schema2code/schema2code",
-        "iconPath": "/static/tabbar/st-code.png",
-        "selectedIconPath": "static/tabbar/st-code1.png",
-        "text": "schema2code"
+        "pagePath": "pages/profile/index",
+        "iconPath": "static/tabbar/obj.png",
+        "selectedIconPath": "static/tabbar/obj1.png",
+        "text": "个人中心"
       }
     ]
   },

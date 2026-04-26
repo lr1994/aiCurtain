@@ -17,8 +17,9 @@ const config = {
     // "google",
     // "alipay",
     // "douyin",
-    "weixin",
     "username",
+    // 暂未完成微信登录配置，先关闭微信登录入口，避免运行时报缺少 appid
+    // 'weixin',
     "smsCode"
   ],
   // 政策协议

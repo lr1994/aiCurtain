@@ -1,0 +1,11 @@
+{
+  "name": "curtain-pay-order-create",
+  "version": "1.0.0",
+  "description": "窗帘充值订单创建云函数",
+  "main": "index.js",
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "uni-id": "file:../../../uni_modules/uni-id/uniCloud/cloudfunctions/common/uni-id"
+  }
+}

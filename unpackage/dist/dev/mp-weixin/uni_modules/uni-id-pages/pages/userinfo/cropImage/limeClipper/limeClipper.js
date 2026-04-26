@@ -774,7 +774,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $props.isShowPhotoBtn ? common_vendor.e({
     v: _ctx.$slots.photo
   }, _ctx.$slots.photo ? {} : {
-    w: common_assets._imports_0$4
+    w: common_assets._imports_0$1
   }, {
     x: common_vendor.o((...args) => $options.uploadImage && $options.uploadImage(...args), "b3")
   }) : {}, {
@@ -782,7 +782,7 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   }, $props.isShowRotateBtn ? common_vendor.e({
     z: _ctx.$slots.rotate
   }, _ctx.$slots.rotate ? {} : {
-    A: common_assets._imports_1$1
+    A: common_assets._imports_1
   }, {
     B: common_vendor.o((...args) => $options.rotate && $options.rotate(...args), "32")
   }) : {}, {

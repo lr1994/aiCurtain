@@ -1,89 +1,126 @@
 <template>
 	<view class="curtain-page">
-		<view class="hero-card">
-			<view class="hero-badge">IMAGE FUSION LAB</view>
-			<view class="hero-title">AI 窗帘预览</view>
-			<view class="hero-desc">上传空间背景图和窗帘材质图，通过 uniCloud 云函数生成图生图预览，并保留你自己的历史记录。</view>
-			<view class="hero-footer">
-				<text class="status-chip" :class="hasLogin ? 'status-chip--online' : 'status-chip--offline'">
-					{{ hasLogin ? '已登录，可生成并查看私有历史' : '未登录，生成前请先登录' }}
-				</text>
-				<button v-if="!hasLogin" class="hero-login-btn" size="mini" type="primary" @click="goLogin">去登录</button>
-			</view>
-		</view>
-
-		<view class="upload-grid">
-			<view class="panel-card">
-				<view class="panel-head">
-					<text class="panel-title">背景图</text>
-					<text class="panel-tip">房间场景图</text>
-				</view>
-				<view class="upload-box upload-box--cyan" @click="chooseImage('background')">
-					<image v-if="form.backgroundUrl" :src="form.backgroundUrl" mode="aspectFill" class="upload-image" />
-					<view v-else class="upload-placeholder">
-						<text class="upload-plus">+</text>
-						<text class="upload-text">点击上传背景图</text>
+		<view class="hero-shell">
+			<view class="hero-card">
+				<view class="hero-topbar">
+					<view class="hero-brand">{{ homeView.brandText }}</view>
+					<view class="hero-avatar" @click="openProfile">
+						<text class="hero-avatar-icon">{{ hasLogin ? '我' : '登' }}</text>
 					</view>
 				</view>
-				<view class="upload-actions">
-					<text class="upload-action" @click.stop="chooseImage('background')">重新上传</text>
-					<text v-if="form.backgroundUrl" class="upload-action upload-action--danger" @click.stop="clearImage('background')">清空</text>
-				</view>
+				<view class="hero-greeting">{{ homeView.greetingText }}</view>
+				<view class="hero-points">{{ homeView.pointsText }}</view>
+				<view class="hero-hint">{{ homeView.loginHintText }}</view>
 			</view>
+		</view>
 
-			<view class="panel-card">
-				<view class="panel-head">
-					<text class="panel-title">材质图</text>
-					<text class="panel-tip">窗帘纹理图</text>
-				</view>
-				<view class="upload-box upload-box--violet" @click="chooseImage('texture')">
-					<image v-if="form.textureUrl" :src="form.textureUrl" mode="aspectFill" class="upload-image" />
-					<view v-else class="upload-placeholder">
-						<text class="upload-plus">+</text>
-						<text class="upload-text">点击上传材质图</text>
+		<view class="workbench-card">
+			<view class="upload-deck">
+				<view class="upload-card" @click="chooseImage('background')">
+					<view class="upload-title">上传空窗照</view>
+					<image v-if="form.backgroundUrl" :src="form.backgroundUrl" mode="aspectFill" class="upload-preview" />
+					<view v-else class="upload-illustration upload-illustration--window">
+						<view class="illustration-frame">
+							<view class="illustration-hill"></view>
+							<view class="illustration-sun"></view>
+						</view>
+					</view>
+					<view class="upload-trigger">
+						<text class="upload-trigger-icon">+</text>
+					</view>
+					<view class="upload-footer">
+						<text class="upload-link" @click.stop="chooseImage('background')">{{ form.backgroundUrl ? '重新上传' : '选择图片' }}</text>
+						<text v-if="form.backgroundUrl" class="upload-link upload-link--danger" @click.stop="clearImage('background')">清空</text>
 					</view>
 				</view>
-				<view class="upload-actions">
-					<text class="upload-action" @click.stop="chooseImage('texture')">重新上传</text>
-					<text v-if="form.textureUrl" class="upload-action upload-action--danger" @click.stop="clearImage('texture')">清空</text>
+
+				<view class="upload-arrow">
+					<text>></text>
+				</view>
+
+				<view class="upload-card" @click="chooseImage('texture')">
+					<view class="upload-title">上传面料/成品图</view>
+					<image v-if="form.textureUrl" :src="form.textureUrl" mode="aspectFill" class="upload-preview" />
+					<view v-else class="upload-illustration upload-illustration--fabric">
+						<view class="fabric-roll">
+							<view class="fabric-core"></view>
+						</view>
+					</view>
+					<view class="upload-trigger">
+						<text class="upload-trigger-icon">+</text>
+					</view>
+					<view class="upload-footer">
+						<text class="upload-link" @click.stop="chooseImage('texture')">{{ form.textureUrl ? '重新上传' : '选择图片' }}</text>
+						<text v-if="form.textureUrl" class="upload-link upload-link--danger" @click.stop="clearImage('texture')">清空</text>
+					</view>
 				</view>
 			</view>
-		</view>
 
-		<view class="panel-card prompt-card">
-			<view class="panel-head">
-				<text class="panel-title">融合提示词</text>
-				<text class="panel-tip">{{ promptLength }}/300</text>
+			<view class="section-title">风格设置</view>
+
+			<picker :range="pleatOptions" range-key="label" :value="selectedPleatIndex" @change="handlePleatChange">
+				<view class="setting-row">
+					<text class="setting-label">褶皱倍数：</text>
+					<view class="setting-value">
+						<text>{{ currentPleatLabel }}</text>
+						<text class="setting-arrow">▼</text>
+					</view>
+				</view>
+			</picker>
+
+			<picker :range="headStyleOptions" range-key="label" :value="selectedHeadStyleIndex" @change="handleHeadStyleChange">
+				<view class="setting-row">
+					<text class="setting-label">帘头款式：</text>
+					<view class="setting-value">
+						<text>{{ currentHeadStyleLabel }}</text>
+						<text class="setting-arrow">▼</text>
+					</view>
+				</view>
+			</picker>
+
+			<view class="switch-row" @click="toggleIncludeSheer">
+				<text class="setting-label">包含纱帘？</text>
+				<view class="checkbox-box" :class="styleForm.includeSheer ? 'checkbox-box--checked' : ''">
+					<text v-if="styleForm.includeSheer">x</text>
+				</view>
 			</view>
-			<textarea
-				v-model="form.prompt"
-				class="prompt-input"
-				maxlength="300"
-				placeholder="描述你希望的窗帘融合效果"
-				placeholder-class="prompt-placeholder"
-			/>
-			<view class="prompt-hint">建议描述材质覆盖区域、褶皱方向、光影真实感和整体色调。</view>
-		</view>
 
-		<view class="action-row">
-			<button class="action-btn action-btn--primary" :loading="generating" :disabled="!canGenerate" @click="submitGenerate">
-				{{ generating ? '生成中...' : '开始生成' }}
+			<view class="prompt-panel">
+				<view class="prompt-head">
+					<text class="prompt-title">高级提示词</text>
+					<text class="prompt-count">{{ promptLength }}/300</text>
+				</view>
+				<textarea
+					v-model="form.prompt"
+					class="prompt-input"
+					maxlength="300"
+					placeholder="描述你希望的窗帘融合效果"
+					placeholder-class="prompt-placeholder"
+				/>
+			</view>
+
+			<button class="submit-btn" :loading="generating" :disabled="homeView.submitDisabled" @click="submitGenerate">
+				{{ homeView.submitText }}
 			</button>
-			<button class="action-btn action-btn--ghost" :disabled="generating || !!uploadingField" @click="resetForm">清空当前</button>
+
+			<view class="recharge-line">
+				<text class="recharge-text">点数不足？</text>
+				<text class="recharge-link" @click="goRecharge">去充值</text>
+			</view>
 		</view>
 
-		<view v-if="resultUrl" class="panel-card result-card">
-			<view class="panel-head">
-				<text class="panel-title">生成结果</text>
-				<text class="panel-tip">点击可预览大图</text>
+		<view v-if="resultUrl" class="result-card">
+			<view class="section-head">
+				<text class="section-head-title">生成结果</text>
+				<text class="section-head-link" @click="previewSingle(resultUrl)">预览大图</text>
 			</view>
 			<image :src="resultUrl" mode="widthFix" class="result-image" @click="previewSingle(resultUrl)" />
 		</view>
 
-		<view class="panel-card history-card">
-			<view class="panel-head">
-				<text class="panel-title">最近记录</text>
-				<text class="panel-refresh" @click="refreshHistory">刷新</text>
+		<view class="history-card">
+			<view class="section-head">
+				<text class="section-head-title">最近记录</text>
+				<text class="section-head-link" @click="refreshHistory">刷新</text>
 			</view>
 
 			<view v-if="!hasLogin" class="history-empty">
@@ -118,8 +155,33 @@
 </template>
 
 <script>
+import renderSession from '../../common/curtain-app/frontend/render-session.js'
+import pageModels from '../../common/curtain-app/frontend/page-models.js'
+import pointSummaryModels from '../../common/curtain-app/frontend/point-summary.js'
+
+const {
+	readSceneSelection,
+	clearSceneSelection,
+	buildRenderDraft,
+	saveRenderResult
+} = renderSession
+const { buildRenderHomeViewModel } = pageModels
+const {
+	createEmptyPointSummary,
+	normalizePointSummary
+} = pointSummaryModels
 const DEFAULT_MODEL = 'gemini-3.1-flash-image-preview'
 const DEFAULT_PROMPT = '将材质自然应用到窗帘区域，保持原场景结构、褶皱走向与真实光影，输出真实可用的窗帘预览图'
+const PLEAT_OPTIONS = [
+	{ value: '1.8', label: '1.8倍' },
+	{ value: '2.0', label: '2.0倍' },
+	{ value: '2.2', label: '2.2倍' }
+]
+const HEAD_STYLE_OPTIONS = [
+	{ value: 'simple', label: '简约韩式' },
+	{ value: 'wave', label: '波浪帘头' },
+	{ value: 'box', label: '盒型帘头' }
+]
 
 function createDefaultForm() {
 	return {
@@ -134,7 +196,19 @@ function createDefaultForm() {
 	}
 }
 
+function createDefaultStyleForm() {
+	return {
+		pleatMultiple: '2.0',
+		headStyle: 'simple',
+		includeSheer: true
+	}
+}
+
 export default {
+	created() {
+		this.syncLoginState()
+		this.pointSummaryLoading = this.hasLogin
+	},
 	data() {
 		return {
 			hasLogin: false,
@@ -144,7 +218,13 @@ export default {
 			uploadingField: '',
 			resultUrl: '',
 			historyList: [],
-			form: createDefaultForm()
+			pointSummary: createEmptyPointSummary(),
+			pointSummaryLoading: false,
+			pointSummaryError: '',
+			form: createDefaultForm(),
+			styleForm: createDefaultStyleForm(),
+			pleatOptions: PLEAT_OPTIONS,
+			headStyleOptions: HEAD_STYLE_OPTIONS
 		}
 	},
 	computed: {
@@ -160,29 +240,66 @@ export default {
 		},
 		promptLength() {
 			return this.normalizeString(this.form.prompt).length
+		},
+		homeView() {
+			return buildRenderHomeViewModel({
+				hasLogin: this.hasLogin,
+				balance: this.pointSummary.balance,
+				generating: this.generating,
+				canGenerate: this.canGenerate,
+				pointSummaryLoading: this.pointSummaryLoading,
+				pointSummaryError: this.pointSummaryError
+			})
+		},
+		selectedPleatIndex() {
+			const index = this.pleatOptions.findIndex((item) => item.value === this.styleForm.pleatMultiple)
+			return index < 0 ? 1 : index
+		},
+		selectedHeadStyleIndex() {
+			const index = this.headStyleOptions.findIndex((item) => item.value === this.styleForm.headStyle)
+			return index < 0 ? 0 : index
+		},
+		currentPleatLabel() {
+			return (this.pleatOptions[this.selectedPleatIndex] || {}).label || '2.0倍'
+		},
+		currentHeadStyleLabel() {
+			return (this.headStyleOptions[this.selectedHeadStyleIndex] || {}).label || '简约韩式'
 		}
 	},
 	onLoad() {
-		this.syncLoginState()
-		if (this.hasLogin) {
-			this.loadHistory({
-				silent: true
-			})
-		}
+		this.handlePageLoad()
 	},
 	onShow() {
-		const hadLogin = this.hasLogin
-		this.syncLoginState()
-		if (this.hasLogin && (!hadLogin || this.historyList.length === 0)) {
-			this.loadHistory({
-				silent: true
-			})
-		}
-		if (!this.hasLogin) {
-			this.historyList = []
-		}
+		this.handlePageShow()
 	},
 	methods: {
+		handlePageLoad() {
+			this.syncLoginState()
+			if (this.hasLogin) {
+				this.loadHistory({
+					silent: true
+				})
+			}
+		},
+		handlePageShow() {
+			const hadLogin = this.hasLogin
+			this.syncLoginState()
+			this.applySceneSelection()
+			if (this.hasLogin && (!hadLogin || this.historyList.length === 0)) {
+				this.loadHistory({
+					silent: true
+				})
+			}
+			if (this.hasLogin) {
+				this.loadPointSummary()
+			}
+			if (!this.hasLogin) {
+				this.historyList = []
+				this.pointSummary = createEmptyPointSummary()
+				this.pointSummaryLoading = false
+				this.pointSummaryError = ''
+			}
+		},
 		normalizeString(value) {
 			return typeof value === 'string' ? value.trim() : ''
 		},
@@ -217,10 +334,156 @@ export default {
 			return false
 		},
 		goLogin() {
-			const redirectUrl = encodeURIComponent('/pages/cloudFunction/cloudFunction')
+			const redirectUrl = encodeURIComponent('/pages/render/index')
 			uni.navigateTo({
 				url: `/uni_modules/uni-id-pages/pages/login/login-withoutpwd?uniIdRedirectUrl=${redirectUrl}`
 			})
+		},
+		openProfile() {
+			if (!this.hasLogin) {
+				this.goLogin()
+				return
+			}
+			uni.navigateTo({
+				url: '/uni_modules/uni-id-pages/pages/userinfo/userinfo'
+			})
+		},
+		goRecharge() {
+			if (!this.hasLogin) {
+				this.goLogin()
+				return
+			}
+			uni.navigateTo({
+				url: '/pages/profile/recharge'
+			})
+		},
+		handlePleatChange(event) {
+			const index = Number(event && event.detail && event.detail.value || 0)
+			const target = this.pleatOptions[index]
+			if (target) {
+				this.styleForm.pleatMultiple = target.value
+			}
+		},
+		handleHeadStyleChange(event) {
+			const index = Number(event && event.detail && event.detail.value || 0)
+			const target = this.headStyleOptions[index]
+			if (target) {
+				this.styleForm.headStyle = target.value
+			}
+		},
+		toggleIncludeSheer() {
+			this.styleForm.includeSheer = !this.styleForm.includeSheer
+		},
+		applySceneSelection() {
+			return this.prepareSceneSelection()
+		},
+		async prepareSceneSelection() {
+			const scene = readSceneSelection()
+			const draft = buildRenderDraft(scene)
+			const hasDraft = !!(
+				draft.sceneTemplateId
+				|| draft.backgroundImage
+				|| draft.textureImage
+				|| draft.prompt
+			)
+			if (!hasDraft) {
+				return
+			}
+			this.form.backgroundFileId = ''
+			this.form.backgroundSourceId = ''
+			this.form.backgroundUrl = draft.backgroundImage
+			this.form.textureUrl = draft.textureImage || ''
+			this.form.prompt = draft.prompt || DEFAULT_PROMPT
+			this.form.model = draft.model || DEFAULT_MODEL
+			this.form.textureFileId = ''
+			this.form.textureSourceId = ''
+			this.styleForm = {
+				pleatMultiple: draft.config && draft.config.pleatMultiple || '2.0',
+				headStyle: draft.config && draft.config.headStyle || 'simple',
+				includeSheer: typeof (draft.config && draft.config.includeSheer) === 'boolean' ? draft.config.includeSheer : true
+			}
+			this.resultUrl = ''
+			if (!draft.backgroundFileId) {
+				clearSceneSelection()
+				uni.showToast({
+					title: draft.textureImage || draft.prompt ? '作品信息已回填，如需生成请重新上传原图' : '样板间已回填，如需生成请补传背景图原图',
+					icon: 'none',
+					duration: 2600
+				})
+				return
+			}
+			if (!this.hasLogin) {
+				uni.showToast({
+					title: '样板间已回填，登录后可直接生成',
+					icon: 'none',
+					duration: 2600
+				})
+				return
+			}
+			uni.showLoading({
+				title: '同步样板间...'
+			})
+			try {
+				const res = await uniCloud.callFunction({
+					name: 'curtain-scene-create-source-ticket',
+					data: {
+						sceneTemplateId: draft.sceneTemplateId
+					}
+				})
+				const result = res.result || {}
+				if (!result.success || !result.sourceId || !result.backgroundFileId) {
+					throw new Error(result.message || '样板间背景图准备失败')
+				}
+				this.form.backgroundFileId = this.normalizeString(result.backgroundFileId)
+				this.form.backgroundSourceId = this.normalizeString(result.sourceId)
+				if (this.normalizeString(result.backgroundUrl)) {
+					this.form.backgroundUrl = this.normalizeString(result.backgroundUrl)
+				}
+				clearSceneSelection()
+				uni.showToast({
+					title: '样板间已回填，可继续上传材质图',
+					icon: 'none',
+					duration: 2200
+				})
+			} catch (error) {
+				this.form.backgroundFileId = ''
+				this.form.backgroundSourceId = ''
+				uni.showToast({
+					title: this.normalizeString(error.message) || '样板间已回填，请补传背景原图',
+					icon: 'none',
+					duration: 2800
+				})
+				clearSceneSelection()
+			} finally {
+				uni.hideLoading()
+			}
+		},
+		async loadPointSummary() {
+			this.pointSummaryLoading = true
+			this.pointSummaryError = ''
+			try {
+				const res = await uniCloud.callFunction({
+					name: 'curtain-point-summary',
+					data: {}
+				})
+				const result = res.result || {}
+				if (!result.success) {
+					throw new Error(result.message || '点数账户加载失败')
+				}
+				this.pointSummary = normalizePointSummary(result)
+				this.pointSummaryError = ''
+			} catch (error) {
+				const errorMessage = this.normalizeString(error && error.message) || '点数账户加载失败'
+				this.pointSummary = createEmptyPointSummary()
+				this.pointSummaryError = errorMessage
+				uni.showToast({
+					title: errorMessage,
+					icon: 'none',
+					duration: 2500
+				})
+			} finally {
+				this.pointSummaryLoading = false
+			}
 		},
 		getFieldConfig(field) {
 			return field === 'background' ? {
@@ -248,6 +511,7 @@ export default {
 		},
 		resetForm() {
 			this.form = createDefaultForm()
+			this.styleForm = createDefaultStyleForm()
 			this.resultUrl = ''
 		},
 		chooseImage(field) {
@@ -270,8 +534,7 @@ export default {
 			})
 		},
 		async uploadImage(field, filePath) {
-			const config = this.getFieldConfig(field);
-			console.log('uploadImage', field, filePath);
+			const config = this.getFieldConfig(field)
 			const ext = this.getFileExtension(filePath)
 			this.uploadingField = field
 			uni.showLoading({
@@ -331,6 +594,13 @@ export default {
 				title: '生成中...'
 			})
 			try {
+				const detailPayload = {
+					backgroundUrl: this.normalizeString(this.form.backgroundUrl),
+					textureUrl: this.normalizeString(this.form.textureUrl),
+					prompt: this.normalizeString(this.form.prompt),
+					model: this.form.model,
+					status: 'success'
+				}
 				const res = await uniCloud.callFunction({
 					name: 'curtain-preview-generate',
 					data: {
@@ -347,16 +617,23 @@ export default {
 					throw new Error(result.message || '生成失败')
 				}
 				this.resultUrl = this.normalizeString(result.resultUrl)
+				saveRenderResult({
+					...detailPayload,
+					recordId: this.normalizeString(result.recordId),
+					resultUrl: this.normalizeString(result.resultUrl),
+					coverUrl: this.normalizeString(result.resultUrl),
+					errorMessage: ''
+				})
 				this.form.backgroundFileId = ''
 				this.form.backgroundSourceId = ''
 				this.form.textureFileId = ''
 				this.form.textureSourceId = ''
+				await this.loadPointSummary()
 				await this.loadHistory({
 					silent: true
 				})
-				uni.showToast({
-					title: '生成成功',
-					icon: 'none'
+				uni.navigateTo({
+					url: '/pages/render/result'
 				})
 			} catch (error) {
 				const errorMessage = this.normalizeString(error.message)
@@ -510,257 +787,412 @@ export default {
 
 <style>
 page {
-	background: #07111f;
+	background: #ebe4d8;
 }
 
 .curtain-page {
 	min-height: 100vh;
-	padding: 24rpx 24rpx 40rpx;
+	padding: 26rpx 22rpx 40rpx;
 	background:
-		radial-gradient(circle at top left, rgba(20, 184, 166, 0.18), transparent 32%),
-		radial-gradient(circle at top right, rgba(59, 130, 246, 0.18), transparent 30%),
-		linear-gradient(180deg, #081220 0%, #0b1729 48%, #111f34 100%);
+		radial-gradient(circle at top, rgba(255, 255, 255, 0.78), rgba(255, 255, 255, 0) 34%),
+		linear-gradient(180deg, #d7c7ae 0%, #efe7da 26%, #efe9de 100%);
 	box-sizing: border-box;
 }
 
+.hero-shell {
+	padding: 18rpx 10rpx 14rpx;
+	border-radius: 34rpx;
+	background: rgba(255, 255, 255, 0.26);
+	backdrop-filter: blur(14rpx);
+}
+
 .hero-card,
-.panel-card {
-	background: rgba(10, 19, 35, 0.88);
-	border: 2rpx solid rgba(148, 163, 184, 0.16);
-	border-radius: 28rpx;
-	box-shadow: 0 24rpx 60rpx rgba(3, 10, 22, 0.32);
-	backdrop-filter: blur(10rpx);
+.workbench-card,
+.result-card,
+.history-card {
+	background: rgba(255, 251, 245, 0.96);
+	border: 2rpx solid rgba(197, 170, 123, 0.16);
+	border-radius: 34rpx;
+	box-shadow: 0 20rpx 48rpx rgba(102, 79, 42, 0.12);
 }
 
 .hero-card {
-	padding: 32rpx;
-	margin-bottom: 24rpx;
+	padding: 26rpx 26rpx 28rpx;
 }
 
-.hero-badge {
-	display: inline-flex;
-	padding: 10rpx 16rpx;
-	border-radius: 999rpx;
-	background: rgba(14, 165, 233, 0.14);
-	color: #6ee7f9;
-	font-size: 22rpx;
-	letter-spacing: 2rpx;
-}
-
-.hero-title {
-	margin-top: 18rpx;
-	color: #f8fafc;
-	font-size: 44rpx;
-	font-weight: 700;
-}
-
-.hero-desc {
-	margin-top: 14rpx;
-	color: #94a3b8;
-	font-size: 26rpx;
-	line-height: 1.6;
-}
-
-.hero-footer {
-	margin-top: 24rpx;
+.hero-topbar {
+	position: relative;
 	display: flex;
 	align-items: center;
-	justify-content: space-between;
-	gap: 16rpx;
+	justify-content: flex-end;
+	min-height: 56rpx;
 }
 
-.status-chip {
-	flex: 1;
-	padding: 14rpx 20rpx;
-	border-radius: 999rpx;
-	font-size: 24rpx;
-	line-height: 1.4;
-}
-
-.status-chip--online {
-	background: rgba(16, 185, 129, 0.14);
-	color: #86efac;
-}
-
-.status-chip--offline {
-	background: rgba(245, 158, 11, 0.14);
-	color: #fcd34d;
-}
-
-.hero-login-btn {
-	margin: 0;
-	padding: 0 24rpx;
-	border-radius: 999rpx;
-	background: linear-gradient(90deg, #0891b2 0%, #2563eb 100%);
-}
-
-.upload-grid {
-	display: flex;
-	flex-direction: column;
-	margin-bottom: 24rpx;
-}
-
-.panel-card {
-	padding: 28rpx;
-	margin-bottom: 24rpx;
-}
-
-.panel-head {
-	display: flex;
-	align-items: center;
-	justify-content: space-between;
-	margin-bottom: 20rpx;
-}
-
-.panel-title {
-	color: #f8fafc;
+.hero-brand {
+	position: absolute;
+	left: 50%;
+	transform: translateX(-50%);
+	color: #31210f;
 	font-size: 30rpx;
 	font-weight: 600;
 }
 
-.panel-tip,
-.panel-refresh {
-	color: #7dd3fc;
+.hero-avatar {
+	width: 54rpx;
+	height: 54rpx;
+	border-radius: 50%;
+	border: 2rpx solid rgba(49, 33, 15, 0.8);
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	background: rgba(255, 255, 255, 0.65);
+}
+
+.hero-avatar-icon {
+	color: #31210f;
+	font-size: 24rpx;
+	font-weight: 600;
+}
+
+.hero-greeting {
+	margin-top: 30rpx;
+	color: #20160a;
+	font-size: 58rpx;
+	font-weight: 700;
+	line-height: 1.14;
+}
+
+.hero-points,
+.hero-hint {
+	margin-top: 14rpx;
+	color: #4a3a25;
+	font-size: 28rpx;
+}
+
+.hero-hint {
+	color: #7f6a4d;
 	font-size: 24rpx;
 }
 
-.upload-box {
-	height: 320rpx;
-	border-radius: 22rpx;
-	overflow: hidden;
-	position: relative;
+.workbench-card,
+.result-card,
+.history-card {
+	margin-top: 18rpx;
+	padding: 24rpx 22rpx 26rpx;
 }
 
-.upload-box--cyan {
-	background: linear-gradient(135deg, rgba(6, 182, 212, 0.18) 0%, rgba(15, 23, 42, 0.9) 100%);
-	border: 2rpx dashed rgba(103, 232, 249, 0.34);
-}
-
-.upload-box--violet {
-	background: linear-gradient(135deg, rgba(96, 165, 250, 0.18) 0%, rgba(30, 41, 59, 0.94) 100%);
-	border: 2rpx dashed rgba(147, 197, 253, 0.34);
-}
-
-.upload-image {
-	width: 100%;
-	height: 100%;
-}
-
-.upload-placeholder {
-	height: 100%;
+.upload-deck {
 	display: flex;
-	flex-direction: column;
+	align-items: center;
+	justify-content: space-between;
+	gap: 12rpx;
+}
+
+.upload-card {
+	flex: 1;
+	min-width: 0;
+	padding: 22rpx 18rpx 18rpx;
+	border-radius: 28rpx;
+	border: 3rpx solid rgba(197, 170, 123, 0.72);
+	background: linear-gradient(180deg, rgba(255, 255, 255, 0.98) 0%, rgba(247, 241, 231, 0.96) 100%);
+	box-sizing: border-box;
+}
+
+.upload-title {
+	color: #2f2112;
+	font-size: 28rpx;
+	font-weight: 600;
+	text-align: center;
+}
+
+.upload-preview,
+.upload-illustration {
+	width: 100%;
+	height: 224rpx;
+	margin-top: 22rpx;
+	border-radius: 24rpx;
+	background: rgba(250, 244, 234, 0.92);
+}
+
+.upload-preview {
+	object-fit: cover;
+}
+
+.upload-illustration {
+	display: flex;
 	align-items: center;
 	justify-content: center;
-	color: #cbd5e1;
 }
 
-.upload-plus {
-	font-size: 56rpx;
-	line-height: 1;
+.illustration-frame {
+	position: relative;
+	width: 108rpx;
+	height: 78rpx;
+	border: 6rpx solid #c6aa7d;
+	border-radius: 16rpx;
+	box-sizing: border-box;
 }
 
-.upload-text {
-	margin-top: 12rpx;
-	font-size: 26rpx;
+.illustration-hill {
+	position: absolute;
+	left: 14rpx;
+	bottom: 10rpx;
+	width: 48rpx;
+	height: 22rpx;
+	border-left: 6rpx solid #c6aa7d;
+	border-bottom: 6rpx solid #c6aa7d;
+	transform: skewX(-24deg);
 }
 
-.upload-actions {
-	margin-top: 18rpx;
+.illustration-sun {
+	position: absolute;
+	right: 12rpx;
+	top: 12rpx;
+	width: 14rpx;
+	height: 14rpx;
+	border-radius: 50%;
+	background: #c6aa7d;
+}
+
+.fabric-roll {
+	position: relative;
+	width: 84rpx;
+	height: 108rpx;
+	border: 6rpx solid #c6aa7d;
+	border-left-width: 10rpx;
+	border-radius: 36rpx 20rpx 24rpx 36rpx;
+	transform: rotate(18deg);
+	box-sizing: border-box;
+}
+
+.fabric-core {
+	position: absolute;
+	left: -18rpx;
+	bottom: 16rpx;
+	width: 34rpx;
+	height: 34rpx;
+	border-radius: 50%;
+	border: 6rpx solid #c6aa7d;
+	background: rgba(255, 255, 255, 0.98);
+	box-sizing: border-box;
+}
+
+.upload-trigger {
+	width: 84rpx;
+	height: 84rpx;
+	margin: 14rpx auto 0;
+	border-radius: 50%;
+	background: linear-gradient(180deg, #1e7987 0%, #0b5f73 100%);
+	box-shadow: 0 10rpx 20rpx rgba(14, 95, 110, 0.24);
 	display: flex;
+	align-items: center;
+	justify-content: center;
+}
+
+.upload-trigger-icon {
+	color: #ffffff;
+	font-size: 38rpx;
+	font-weight: 600;
+}
+
+.upload-footer {
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 18rpx;
+	margin-top: 16rpx;
+	min-height: 32rpx;
+}
+
+.upload-link {
+	color: #0b5f73;
+	font-size: 22rpx;
+}
+
+.upload-link--danger {
+	color: #b25447;
+}
+
+.upload-arrow {
+	width: 34rpx;
+	text-align: center;
+	color: #b89a68;
+	font-size: 44rpx;
+	font-weight: 400;
+	flex-shrink: 0;
+}
+
+.section-title {
+	margin-top: 28rpx;
+	color: #2f2112;
+	font-size: 34rpx;
+	font-weight: 700;
+}
+
+.setting-row,
+.switch-row {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+	margin-top: 18rpx;
+	padding: 20rpx 22rpx;
+	border-radius: 18rpx;
+	background: #ffffff;
+	border: 2rpx solid rgba(198, 170, 125, 0.34);
+}
+
+.setting-label {
+	color: #2f2112;
+	font-size: 28rpx;
+	font-weight: 600;
+}
+
+.setting-value {
+	display: flex;
+	align-items: center;
+	gap: 14rpx;
+	color: #5b4930;
+	font-size: 28rpx;
+}
+
+.setting-arrow {
+	color: #b89a68;
+	font-size: 20rpx;
+}
+
+.checkbox-box {
+	width: 38rpx;
+	height: 38rpx;
+	border-radius: 8rpx;
+	border: 2rpx solid #8fa4ab;
+	color: #0b5f73;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	font-size: 24rpx;
+	font-weight: 700;
+	box-sizing: border-box;
+}
+
+.checkbox-box--checked {
+	border-color: #0b5f73;
+	background: rgba(11, 95, 115, 0.08);
+}
+
+.prompt-panel {
+	margin-top: 20rpx;
+	padding: 18rpx 20rpx 20rpx;
+	border-radius: 24rpx;
+	background: rgba(255, 255, 255, 0.88);
+}
+
+.prompt-head {
+	display: flex;
+	align-items: center;
 	justify-content: space-between;
 }
 
-.upload-action {
-	color: #7dd3fc;
+.prompt-title,
+.prompt-count {
+	color: #6a5538;
 	font-size: 24rpx;
-}
-
-.upload-action--danger {
-	color: #fca5a5;
-}
-
-.prompt-card {
-	padding-bottom: 24rpx;
 }
 
 .prompt-input {
 	width: 100%;
-	height: 220rpx;
-	padding: 24rpx;
-	border-radius: 24rpx;
+	height: 148rpx;
+	margin-top: 14rpx;
+	padding: 18rpx;
+	border-radius: 18rpx;
 	box-sizing: border-box;
-	background: rgba(2, 6, 23, 0.72);
-	color: #f8fafc;
-	font-size: 28rpx;
+	background: #f8f2e9;
+	color: #2f2112;
+	font-size: 26rpx;
 	line-height: 1.6;
 }
 
 .prompt-placeholder {
-	color: #64748b;
+	color: #a5927b;
 }
 
-.prompt-hint {
-	margin-top: 16rpx;
-	color: #64748b;
-	font-size: 24rpx;
-	line-height: 1.5;
-}
-
-.action-row {
-	display: flex;
-	gap: 20rpx;
-	margin-bottom: 24rpx;
-}
-
-.action-btn {
-	flex: 1;
+.submit-btn {
+	margin-top: 24rpx;
 	border-radius: 999rpx;
-	font-size: 28rpx;
-}
-
-.action-btn--primary {
-	background: linear-gradient(90deg, #06b6d4 0%, #2563eb 100%);
+	background: linear-gradient(90deg, #14768a 0%, #0e8ca0 100%);
 	color: #ffffff;
+	font-size: 32rpx;
+	font-weight: 700;
+	box-shadow: 0 14rpx 24rpx rgba(20, 118, 138, 0.2);
 }
 
-.action-btn--ghost {
-	background: rgba(15, 23, 42, 0.82);
-	color: #cbd5e1;
-	border: 2rpx solid rgba(148, 163, 184, 0.18);
+.submit-btn[disabled] {
+	opacity: 0.66;
 }
 
-.result-card {
-	padding-bottom: 20rpx;
+.recharge-line {
+	margin-top: 18rpx;
+	display: flex;
+	align-items: center;
+	justify-content: center;
+	gap: 10rpx;
+}
+
+.recharge-text,
+.recharge-link {
+	font-size: 24rpx;
+}
+
+.recharge-text {
+	color: #7f6a4d;
+}
+
+.recharge-link {
+	color: #0b5f73;
+	font-weight: 600;
+}
+
+.section-head {
+	display: flex;
+	align-items: center;
+	justify-content: space-between;
+}
+
+.section-head-title {
+	color: #2f2112;
+	font-size: 30rpx;
+	font-weight: 700;
+}
+
+.section-head-link {
+	color: #0b5f73;
+	font-size: 24rpx;
 }
 
 .result-image {
 	width: 100%;
+	margin-top: 20rpx;
 	border-radius: 24rpx;
-	background: rgba(2, 6, 23, 0.68);
-}
-
-.history-card {
-	margin-bottom: 0;
+	background: #efe6d8;
 }
 
 .history-empty {
-	padding: 36rpx 20rpx;
-	border-radius: 22rpx;
-	background: rgba(15, 23, 42, 0.7);
+	margin-top: 18rpx;
+	padding: 34rpx 18rpx;
+	border-radius: 24rpx;
+	background: #fbf7f0;
 	text-align: center;
 }
 
 .history-empty-title {
 	display: block;
-	color: #e2e8f0;
+	color: #4b3a26;
 	font-size: 28rpx;
 }
 
 .history-empty-desc {
 	display: block;
 	margin-top: 12rpx;
-	color: #64748b;
+	color: #8a7558;
 	font-size: 24rpx;
 	line-height: 1.6;
 }
@@ -768,22 +1200,23 @@ page {
 .history-list {
 	display: flex;
 	flex-direction: column;
-	gap: 18rpx;
+	gap: 16rpx;
+	margin-top: 18rpx;
 }
 
 .history-item {
 	display: flex;
-	gap: 18rpx;
-	padding: 18rpx;
-	border-radius: 22rpx;
-	background: rgba(15, 23, 42, 0.72);
+	gap: 16rpx;
+	padding: 16rpx;
+	border-radius: 24rpx;
+	background: #fbf7f0;
 }
 
 .history-thumb {
-	width: 168rpx;
-	height: 168rpx;
+	width: 152rpx;
+	height: 152rpx;
 	border-radius: 18rpx;
-	background: rgba(30, 41, 59, 0.9);
+	background: #ece2d2;
 	flex-shrink: 0;
 }
 
@@ -799,7 +1232,7 @@ page {
 	display: flex;
 	align-items: center;
 	justify-content: space-between;
-	gap: 16rpx;
+	gap: 12rpx;
 }
 
 .history-status {
@@ -809,30 +1242,30 @@ page {
 }
 
 .history-status--success {
-	background: rgba(16, 185, 129, 0.16);
-	color: #86efac;
+	background: rgba(16, 185, 129, 0.14);
+	color: #2d7d46;
 }
 
 .history-status--fail {
-	background: rgba(248, 113, 113, 0.16);
-	color: #fda4af;
+	background: rgba(248, 113, 113, 0.14);
+	color: #bc534e;
 }
 
 .history-status--processing {
-	background: rgba(59, 130, 246, 0.16);
-	color: #93c5fd;
+	background: rgba(59, 130, 246, 0.14);
+	color: #476d9b;
 }
 
 .history-time {
-	color: #64748b;
+	color: #927c5d;
 	font-size: 22rpx;
 }
 
 .history-prompt {
-	margin-top: 14rpx;
-	color: #cbd5e1;
+	margin-top: 12rpx;
+	color: #3f301d;
 	font-size: 26rpx;
-	line-height: 1.6;
+	line-height: 1.5;
 	display: -webkit-box;
 	overflow: hidden;
 	text-overflow: ellipsis;
@@ -841,34 +1274,33 @@ page {
 }
 
 .history-links {
-	margin-top: 18rpx;
+	margin-top: 16rpx;
 	display: flex;
-	gap: 24rpx;
+	gap: 22rpx;
 }
 
 .history-link {
-	color: #7dd3fc;
+	color: #0b5f73;
 	font-size: 24rpx;
 }
 
 @media screen and (max-width: 640px) {
-	.hero-footer,
-	.action-row {
-		flex-direction: column;
+	.hero-greeting {
+		font-size: 50rpx;
 	}
 
-	.hero-login-btn,
-	.action-btn {
-		width: 100%;
+	.upload-card {
+		padding-left: 14rpx;
+		padding-right: 14rpx;
 	}
 
-	.history-item {
-		flex-direction: column;
+	.upload-title {
+		font-size: 26rpx;
 	}
 
-	.history-thumb {
-		width: 100%;
-		height: 280rpx;
+	.upload-preview,
+	.upload-illustration {
+		height: 196rpx;
 	}
 }
 </style>

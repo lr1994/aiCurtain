@@ -1,5 +1,4 @@
 {
-  "navigationBarTitleText": "AI窗帘预览",
-  "enablePullDownRefresh": false,
+  "component": true,
   "usingComponents": {}
 }

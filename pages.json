@@ -153,7 +153,28 @@
         "navigationBarTitleText": "实名认证"
       }
     }
-  ],
+  ,{
+    "path": "uni_modules/uni-pay/pages/success/success",
+    "style": {
+        "backgroundColor": "#F8F8F8",
+        "navigationBarTitleText": "支付成功"
+    }
+}
+,{
+    "path": "uni_modules/uni-pay/pages/ad-interactive-webview/ad-interactive-webview",
+    "style": {
+        "backgroundColor": "#F8F8F8",
+        "navigationBarTitleText": "ad"
+    }
+}
+,{
+    "path": "uni_modules/uni-pay/pages/pay-desk/pay-desk",
+    "style": {
+        "backgroundColor": "#F8F8F8",
+        "navigationBarTitleText": "收银台"
+    }
+}
+],
   "tabBar": {
     "color": "#867461",
     "selectedColor": "#9d6b3d",
@@ -162,26 +183,26 @@
     "list": [
       {
         "pagePath": "pages/render/index",
-        "iconPath": "static/tabbar/fn.png",
-        "selectedIconPath": "static/tabbar/fn1.png",
+        "iconPath": "static/tabbar/render.png",
+        "selectedIconPath": "static/tabbar/render-active.png",
         "text": "智能渲染"
       },
       {
         "pagePath": "pages/showroom/index",
-        "iconPath": "static/tabbar/storage.png",
-        "selectedIconPath": "static/tabbar/storage1.png",
+        "iconPath": "static/tabbar/showroom.png",
+        "selectedIconPath": "static/tabbar/showroom-active.png",
         "text": "经典样板间"
       },
       {
         "pagePath": "pages/works/index",
-        "iconPath": "static/tabbar/yun.png",
-        "selectedIconPath": "static/tabbar/yun1.png",
+        "iconPath": "static/tabbar/works.png",
+        "selectedIconPath": "static/tabbar/works-active.png",
         "text": "我的作品"
       },
       {
         "pagePath": "pages/profile/index",
-        "iconPath": "static/tabbar/obj.png",
-        "selectedIconPath": "static/tabbar/obj1.png",
+        "iconPath": "static/tabbar/profile.png",
+        "selectedIconPath": "static/tabbar/profile-active.png",
         "text": "个人中心"
       }
     ]

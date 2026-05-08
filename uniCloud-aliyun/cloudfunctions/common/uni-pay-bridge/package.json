@@ -1,0 +1,8 @@
+{
+	"name": "uni-pay-bridge",
+	"version": "1.0.0",
+	"description": "窗帘项目 uni-pay 桥接公共模块",
+	"main": "index.js",
+	"author": "",
+	"license": "ISC"
+}

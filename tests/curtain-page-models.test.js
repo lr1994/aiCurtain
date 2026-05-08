@@ -75,15 +75,44 @@ test('createShowroomCategories prepends all and de-duplicates category keys', ()
 	]);
 });
 
+test('buildRenderHomeViewModel prefers nickname and falls back to account fields', () => {
+	const nicknameState = buildRenderHomeViewModel({
+		hasLogin: true,
+		displayName: '盛泰窗帘厂',
+		balance: 88,
+		generating: false,
+		canGenerate: true
+	});
+	const accountState = buildRenderHomeViewModel({
+		hasLogin: true,
+		displayName: 'demo-account',
+		balance: 88,
+		generating: false,
+		canGenerate: true
+	});
+	const fallbackState = buildRenderHomeViewModel({
+		hasLogin: true,
+		balance: 88,
+		generating: false,
+		canGenerate: true
+	});
+
+	assert.equal(nicknameState.greetingText, '你好，盛泰窗帘厂');
+	assert.equal(accountState.greetingText, '你好，demo-account');
+	assert.equal(fallbackState.greetingText, '你好，欢迎回来');
+});
+
 test('buildRenderHomeViewModel returns render home labels for ready and generating states', () => {
 	const readyState = buildRenderHomeViewModel({
 		hasLogin: true,
+		displayName: '盛泰窗帘厂',
 		balance: 88,
 		generating: false,
 		canGenerate: true
 	});
 	const generatingState = buildRenderHomeViewModel({
 		hasLogin: true,
+		displayName: '盛泰窗帘厂',
 		balance: 88,
 		generating: true,
 		canGenerate: false

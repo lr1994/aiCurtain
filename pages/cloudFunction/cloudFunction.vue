@@ -3,7 +3,7 @@
 		<view class="hero-shell">
 			<view class="hero-card">
 				<view class="hero-topbar">
-					<view class="hero-brand">{{ homeView.brandText }}</view>
+					<!-- <view class="hero-brand">{{ homeView.brandText }}</view> -->
 					<view class="hero-avatar" @click="openProfile">
 						<text class="hero-avatar-icon">{{ hasLogin ? '我' : '登' }}</text>
 					</view>
@@ -35,7 +35,7 @@
 				</view>
 
 				<view class="upload-arrow">
-					<text>></text>
+					<!-- <view>&gt;</view> -->
 				</view>
 
 				<view class="upload-card" @click="chooseImage('texture')">
@@ -213,6 +213,7 @@ export default {
 		return {
 			hasLogin: false,
 			currentUid: '',
+			currentDisplayName: '',
 			generating: false,
 			historyLoading: false,
 			uploadingField: '',
@@ -244,6 +245,7 @@ export default {
 		homeView() {
 			return buildRenderHomeViewModel({
 				hasLogin: this.hasLogin,
+				displayName: this.currentDisplayName,
 				balance: this.pointSummary.balance,
 				generating: this.generating,
 				canGenerate: this.canGenerate,
@@ -303,6 +305,21 @@ export default {
 		normalizeString(value) {
 			return typeof value === 'string' ? value.trim() : ''
 		},
+		resolveCurrentDisplayName(currentUser = {}) {
+			const cachedUser = uni.getStorageSync('uni-id-pages-userInfo') || {}
+			const nickname = this.normalizeString(cachedUser.nickname || currentUser.nickname)
+			if (nickname) {
+				return nickname
+			}
+			return this.normalizeString(
+				cachedUser.username
+				|| currentUser.username
+				|| cachedUser.mobile
+				|| currentUser.mobile
+				|| cachedUser.email
+				|| currentUser.email
+			)
+		},
 		syncLoginState() {
 			const currentUser = typeof uniCloud.getCurrentUserInfo === 'function' ? uniCloud.getCurrentUserInfo() : {}
 			const tokenExpired = Number(currentUser && currentUser.tokenExpired || 0)
@@ -316,6 +333,7 @@ export default {
 			}
 			this.hasLogin = !!uid && tokenExpired > Date.now()
 			this.currentUid = this.hasLogin ? uid : ''
+			this.currentDisplayName = this.hasLogin ? this.resolveCurrentDisplayName(currentUser) : ''
 		},
 		ensureLogin(actionText) {
 			this.syncLoginState()

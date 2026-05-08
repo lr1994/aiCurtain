@@ -109,8 +109,14 @@ export function createShowroomCategories(list = []) {
 	return categories;
 }
 
+function buildGreetingText(displayName) {
+	const normalizedDisplayName = normalizeString(displayName);
+	return normalizedDisplayName ? `你好，${normalizedDisplayName}` : '你好，欢迎回来';
+}
+
 export function buildRenderHomeViewModel({
 	hasLogin = false,
+	displayName = '',
 	balance = 0,
 	generating = false,
 	canGenerate = false,
@@ -127,7 +133,7 @@ export function buildRenderHomeViewModel({
 		: '未登录，生成前请先登录';
 	return {
 		brandText: '帝想AI',
-		greetingText: '你好，盛泰窗帘厂',
+		greetingText: buildGreetingText(displayName),
 		pointsText,
 		loginHintText,
 		submitText: generating ? '生成中...' : '立即生成（消耗 1 点）',

@@ -7,6 +7,9 @@ const projectRoot = path.resolve(__dirname, '..');
 const sceneModulePath = path.join(projectRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-scene-list', 'index.js');
 const sceneTicketModulePath = path.join(projectRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-scene-create-source-ticket', 'index.js');
 const packageModulePath = path.join(projectRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-point-package-list', 'index.js');
+const packageCloudFunctionPackageJsonPath = path.join(projectRoot, 'uniCloud-aliyun', 'cloudfunctions', 'curtain-point-package-list', 'package.json');
+const defaultPackagesCommonPackageJsonPath = path.join(projectRoot, 'uniCloud-aliyun', 'cloudfunctions', 'common', 'curtain-default-packages', 'package.json');
+const defaultPackagesCommonModulePath = path.join(projectRoot, 'uniCloud-aliyun', 'cloudfunctions', 'common', 'curtain-default-packages', 'index.js');
 
 function loadCloudFunction(modulePath, { uniCloud, uniId = null }) {
 	delete require.cache[modulePath];
@@ -16,6 +19,9 @@ function loadCloudFunction(modulePath, { uniCloud, uniId = null }) {
 	Module._load = function patchedLoad(request, parent, isMain) {
 		if (request === 'uni-id' && uniId) {
 			return uniId;
+		}
+		if (request === 'curtain-default-packages') {
+			return require(defaultPackagesCommonModulePath);
 		}
 		return originalLoad.call(this, request, parent, isMain);
 	};
@@ -261,4 +267,12 @@ test('package list returns sorted active packages', async () => {
 
 	assert.equal(result.success, true);
 	assert.deepEqual(result.list.map((item) => item.title), ['体验包', '进阶包', '门店包']);
+});
+
+test('package list cloud function declares the shared default package common module', async () => {
+	const cloudFunctionPackage = require(packageCloudFunctionPackageJsonPath);
+	const commonPackage = require(defaultPackagesCommonPackageJsonPath);
+
+	assert.equal(cloudFunctionPackage.dependencies['curtain-default-packages'], 'file:../common/curtain-default-packages');
+	assert.equal(commonPackage.name, 'curtain-default-packages');
 });

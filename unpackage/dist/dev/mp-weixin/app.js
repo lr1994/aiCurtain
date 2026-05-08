@@ -26,6 +26,9 @@ if (!Math) {
   "./uni_modules/uni-id-pages/pages/userinfo/set-pwd/set-pwd.js";
   "./uni_modules/uni-id-pages/pages/userinfo/deactivate/deactivate.js";
   "./uni_modules/uni-id-pages/pages/userinfo/realname-verify/realname-verify.js";
+  "./uni_modules/uni-pay/pages/success/success.js";
+  "./uni_modules/uni-pay/pages/ad-interactive-webview/ad-interactive-webview.js";
+  "./uni_modules/uni-pay/pages/pay-desk/pay-desk.js";
 }
 const _sfc_main = {
   onLaunch: async function() {

@@ -1,0 +1,9 @@
+{
+    "name": "wxpay-virtual-co",
+    "dependencies": {},
+    "extensions": {},
+    "origin-plugin-dev-name": "uni-pay",
+    "origin-plugin-version": "2.4.2",
+    "plugin-dev-name": "uni-pay",
+    "plugin-version": "2.4.2"
+}

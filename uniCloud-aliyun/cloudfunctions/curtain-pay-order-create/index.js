@@ -1,7 +1,8 @@
 'use strict';
 
 const uniID = require('uni-id');
-const defaultPackages = require('../../../common/curtain-app/default-packages');
+const defaultPackages = require('curtain-default-packages');
+const { createMiniProgramOrder } = require('uni-pay-bridge');
 
 const db = uniCloud.database();
 const packageCollection = db.collection('curtain_point_package');
@@ -76,21 +77,39 @@ function buildOrderNo() {
 	return `CP${Date.now()}${Math.random().toString().slice(2, 6)}`;
 }
 
-function buildPaymentParams(orderNo, amountFen) {
+async function buildPaymentPayload({ auth, pkg, orderNo }) {
 	const mode = normalizeString(process.env.CURTAIN_PAYMENT_MODE) || 'mock';
 	if (mode === 'mock') {
 		return {
-			mock: true,
-			provider: 'wxpay',
-			orderNo,
-			amountFen
+			paymentParams: {
+				mock: true,
+				provider: 'wxpay',
+				orderNo,
+				amountFen: pkg.priceFen
+			},
+			payProvider: 'wxpay',
+			payChannel: 'mp',
+			thirdOrderNo: ''
 		};
 	}
-	return {
-		mock: true,
-		provider: 'wxpay',
+	const openid = normalizeString(auth.openid || auth.wx_openid || auth.mp_openid);
+	if (!openid) {
+		throw new Error('未获取到微信用户标识，请重新登录后再试');
+	}
+	const uniPay = uniCloud.importObject('uni-pay-co');
+	const payRes = await createMiniProgramOrder({
+		uniPay,
 		orderNo,
-		amountFen
+		totalFee: pkg.priceFen,
+		title: pkg.title,
+		uid: auth.uid,
+		openid
+	});
+	return {
+		paymentParams: payRes,
+		payProvider: 'wxpay',
+		payChannel: 'mp',
+		thirdOrderNo: ''
 	};
 }
 
@@ -100,8 +119,8 @@ exports.main = async (event) => {
 		const pkg = await getActivePackage(event && event.packageId);
 		const orderNo = buildOrderNo();
 		const points = pkg.points + pkg.bonusPoints;
-
-		await orderCollection.add({
+		
+		const orderResult = await orderCollection.add({
 			uid: auth.uid,
 			packageId: pkg._id,
 			packageTitle: pkg.title,
@@ -109,13 +128,29 @@ exports.main = async (event) => {
 			amountFen: pkg.priceFen,
 			points,
 			status: 'init',
-			payType: 'wxpay'
+			payType: 'wxpay',
+			payProvider: 'wxpay',
+			payChannel: 'mp',
+			thirdOrderNo: '',
+			transactionId: '',
+			failReason: ''
+		});
+		const paymentPayload = await buildPaymentPayload({
+			auth,
+			pkg,
+			orderNo
+		});
+		const thirdOrderNo = normalizeString(paymentPayload.paymentParams && paymentPayload.paymentParams.thirdOrderNo);
+		await orderCollection.doc(orderResult.id).update({
+			payProvider: paymentPayload.payProvider,
+			payChannel: paymentPayload.payChannel,
+			thirdOrderNo
 		});
 
 		return {
 			success: true,
 			orderNo,
-			paymentParams: buildPaymentParams(orderNo, pkg.priceFen)
+			paymentParams: paymentPayload.paymentParams
 		};
 	} catch (error) {
 		return buildFailResponse(error.message || '创建订单失败');

@@ -50,12 +50,28 @@
       "description": "支付方式",
       "bsonType": "string"
     },
+    "payProvider": {
+      "description": "支付渠道提供方",
+      "bsonType": "string"
+    },
+    "payChannel": {
+      "description": "支付终端渠道",
+      "bsonType": "string"
+    },
+    "thirdOrderNo": {
+      "description": "第三方支付订单号",
+      "bsonType": "string"
+    },
     "status": {
       "description": "订单状态",
       "bsonType": "string"
     },
     "transactionId": {
       "description": "支付流水号",
+      "bsonType": "string"
+    },
+    "failReason": {
+      "description": "支付失败原因",
       "bsonType": "string"
     },
     "payTime": {

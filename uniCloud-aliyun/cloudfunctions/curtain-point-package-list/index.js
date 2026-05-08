@@ -1,6 +1,6 @@
 'use strict';
 
-const defaultPackages = require('../../../common/curtain-app/default-packages');
+const defaultPackages = require('curtain-default-packages');
 
 const db = uniCloud.database();
 const collection = db.collection('curtain_point_package');

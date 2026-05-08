@@ -1,6 +1,6 @@
 {
     "name" : "aiCurtain",
-    "appid" : "__UNI__D354CDD",
+    "appid" : "wx94fd4d1fa4b28056",
     "description" : "应用描述",
     "versionName" : "1.0.0",
     "versionCode" : "100",
@@ -79,7 +79,7 @@
     "quickapp" : {},
     /* 小程序特有相关 */
     "mp-weixin" : {
-        "appid" : "touristappid",
+        "appid" : "wx94fd4d1fa4b28056",
         "setting" : {
             "urlCheck" : false
         },

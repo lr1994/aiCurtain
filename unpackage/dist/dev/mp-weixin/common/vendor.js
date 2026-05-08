@@ -6435,7 +6435,7 @@ function populateParameters(fromRes, toRes) {
   let _SDKVersion = SDKVersion;
   const hostLanguage = (language || "").replace(/_/g, "-");
   const parameters = {
-    appId: "__UNI__D354CDD",
+    appId: "wx94fd4d1fa4b28056",
     appName: "aiCurtain",
     appVersion: "1.0.0",
     appVersionCode: "100",
@@ -6579,7 +6579,7 @@ const getAppBaseInfo = {
     let _hostName = getHostName(fromRes);
     let hostLanguage = (language || "").replace(/_/g, "-");
     const parameters = {
-      appId: "__UNI__D354CDD",
+      appId: "wx94fd4d1fa4b28056",
       appName: "aiCurtain",
       appVersion: "1.0.0",
       appVersionCode: "100",
@@ -7378,9 +7378,9 @@ function isConsoleWritable() {
   return isWritable;
 }
 function initRuntimeSocketService() {
-  const hosts = "192.168.31.152,127.0.0.1";
+  const hosts = "172.26.5.232,127.0.0.1";
   const port = "8090";
-  const id = "mp-weixin_VYxX-U";
+  const id = "mp-weixin_nOOTM_";
   const lazy = typeof swan !== "undefined";
   let restoreError = lazy ? () => {
   } : initOnError();
@@ -8479,6 +8479,27 @@ const pages = [
       enablePullDownRefresh: false,
       navigationBarTitleText: "实名认证"
     }
+  },
+  {
+    path: "uni_modules/uni-pay/pages/success/success",
+    style: {
+      backgroundColor: "#F8F8F8",
+      navigationBarTitleText: "支付成功"
+    }
+  },
+  {
+    path: "uni_modules/uni-pay/pages/ad-interactive-webview/ad-interactive-webview",
+    style: {
+      backgroundColor: "#F8F8F8",
+      navigationBarTitleText: "ad"
+    }
+  },
+  {
+    path: "uni_modules/uni-pay/pages/pay-desk/pay-desk",
+    style: {
+      backgroundColor: "#F8F8F8",
+      navigationBarTitleText: "收银台"
+    }
   }
 ];
 const tabBar = {
@@ -8489,26 +8510,26 @@ const tabBar = {
   list: [
     {
       pagePath: "pages/render/index",
-      iconPath: "static/tabbar/fn.png",
-      selectedIconPath: "static/tabbar/fn1.png",
+      iconPath: "static/tabbar/render.png",
+      selectedIconPath: "static/tabbar/render-active.png",
       text: "智能渲染"
     },
     {
       pagePath: "pages/showroom/index",
-      iconPath: "static/tabbar/storage.png",
-      selectedIconPath: "static/tabbar/storage1.png",
+      iconPath: "static/tabbar/showroom.png",
+      selectedIconPath: "static/tabbar/showroom-active.png",
       text: "经典样板间"
     },
     {
       pagePath: "pages/works/index",
-      iconPath: "static/tabbar/yun.png",
-      selectedIconPath: "static/tabbar/yun1.png",
+      iconPath: "static/tabbar/works.png",
+      selectedIconPath: "static/tabbar/works-active.png",
       text: "我的作品"
     },
     {
       pagePath: "pages/profile/index",
-      iconPath: "static/tabbar/obj.png",
-      selectedIconPath: "static/tabbar/obj1.png",
+      iconPath: "static/tabbar/profile.png",
+      selectedIconPath: "static/tabbar/profile-active.png",
       text: "个人中心"
     }
   ]
@@ -8813,10 +8834,10 @@ class v {
 function I(e2) {
   return e2 && "string" == typeof e2 ? JSON.parse(e2) : e2;
 }
-const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), T = b, C = I('{"address":["127.0.0.1","192.168.31.152"],"servePort":7000,"debugPort":9000,"initialLaunchType":"local","skipFiles":["<node_internals>/**","D:/安装程序/HBuilderX/plugins/unicloud/**/*.js"]}'), P = I('[{"provider":"aliyun","spaceName":"free","spaceId":"mp-9473748b-e2e0-4984-9e06-1bf18906fbd8","clientSecret":"uavsRJD6X9nVs7DUnXcgyw==","endpoint":"https://api.next.bspapp.com","failoverEndpoint":""}]') || [];
+const S = true, b = "mp-weixin", A = I(define_process_env_UNI_SECURE_NETWORK_CONFIG_default), T = b, C = I('{"address":["127.0.0.1","172.26.5.232"],"servePort":7000,"debugPort":9000,"initialLaunchType":"remote","skipFiles":["<node_internals>/**","D:/安装程序/HBuilderX/plugins/unicloud/**/*.js"]}'), P = I('[{"provider":"aliyun","spaceName":"free","spaceId":"mp-9473748b-e2e0-4984-9e06-1bf18906fbd8","clientSecret":"uavsRJD6X9nVs7DUnXcgyw==","endpoint":"https://api.next.bspapp.com","failoverEndpoint":""}]') || [];
 let E = "";
 try {
-  E = "__UNI__D354CDD";
+  E = "wx94fd4d1fa4b28056";
 } catch (e2) {
 }
 let L = {};

@@ -15,11 +15,12 @@
       "ignore": [],
       "disablePlugins": [],
       "outputPath": ""
-    }
+    },
+    "ignoreUploadUnusedFiles": true
   },
   "compileType": "miniprogram",
   "libVersion": "3.15.2",
-  "appid": "wx0f7d76e70da59d78",
+  "appid": "wx94fd4d1fa4b28056",
   "projectname": "aiCurtain",
   "condition": {},
   "editorSetting": {

@@ -54,6 +54,7 @@ const _sfc_main = {
     return {
       hasLogin: false,
       currentUid: "",
+      currentDisplayName: "",
       generating: false,
       historyLoading: false,
       uploadingField: "",
@@ -78,6 +79,7 @@ const _sfc_main = {
     homeView() {
       return buildRenderHomeViewModel({
         hasLogin: this.hasLogin,
+        displayName: this.currentDisplayName,
         balance: this.pointSummary.balance,
         generating: this.generating,
         canGenerate: this.canGenerate,
@@ -137,6 +139,16 @@ const _sfc_main = {
     normalizeString(value) {
       return typeof value === "string" ? value.trim() : "";
     },
+    resolveCurrentDisplayName(currentUser = {}) {
+      const cachedUser = common_vendor.index.getStorageSync("uni-id-pages-userInfo") || {};
+      const nickname = this.normalizeString(cachedUser.nickname || currentUser.nickname);
+      if (nickname) {
+        return nickname;
+      }
+      return this.normalizeString(
+        cachedUser.username || currentUser.username || cachedUser.mobile || currentUser.mobile || cachedUser.email || currentUser.email
+      );
+    },
     syncLoginState() {
       const currentUser = typeof common_vendor._r.getCurrentUserInfo === "function" ? common_vendor._r.getCurrentUserInfo() : {};
       const tokenExpired = Number(currentUser && currentUser.tokenExpired || 0);
@@ -150,6 +162,7 @@ const _sfc_main = {
       }
       this.hasLogin = !!uid && tokenExpired > Date.now();
       this.currentUid = this.hasLogin ? uid : "";
+      this.currentDisplayName = this.hasLogin ? this.resolveCurrentDisplayName(currentUser) : "";
     },
     ensureLogin(actionText) {
       this.syncLoginState();
@@ -614,64 +627,63 @@ const _sfc_main = {
 };
 function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
   return common_vendor.e({
-    a: common_vendor.t($options.homeView.brandText),
-    b: common_vendor.t($data.hasLogin ? "我" : "登"),
-    c: common_vendor.o((...args) => $options.openProfile && $options.openProfile(...args), "dd"),
-    d: common_vendor.t($options.homeView.greetingText),
-    e: common_vendor.t($options.homeView.pointsText),
-    f: common_vendor.t($options.homeView.loginHintText),
+    a: common_vendor.t($data.hasLogin ? "我" : "登"),
+    b: common_vendor.o((...args) => $options.openProfile && $options.openProfile(...args), "d3"),
+    c: common_vendor.t($options.homeView.greetingText),
+    d: common_vendor.t($options.homeView.pointsText),
+    e: common_vendor.t($options.homeView.loginHintText),
+    f: $data.form.backgroundUrl
+  }, $data.form.backgroundUrl ? {
     g: $data.form.backgroundUrl
-  }, $data.form.backgroundUrl ? {
-    h: $data.form.backgroundUrl
   } : {}, {
-    i: common_vendor.t($data.form.backgroundUrl ? "重新上传" : "选择图片"),
-    j: common_vendor.o(($event) => $options.chooseImage("background"), "b8"),
-    k: $data.form.backgroundUrl
+    h: common_vendor.t($data.form.backgroundUrl ? "重新上传" : "选择图片"),
+    i: common_vendor.o(($event) => $options.chooseImage("background"), "6a"),
+    j: $data.form.backgroundUrl
   }, $data.form.backgroundUrl ? {
-    l: common_vendor.o(($event) => $options.clearImage("background"), "bd")
+    k: common_vendor.o(($event) => $options.clearImage("background"), "f5")
   } : {}, {
-    m: common_vendor.o(($event) => $options.chooseImage("background"), "8f"),
+    l: common_vendor.o(($event) => $options.chooseImage("background"), "6a"),
+    m: $data.form.textureUrl
+  }, $data.form.textureUrl ? {
     n: $data.form.textureUrl
-  }, $data.form.textureUrl ? {
-    o: $data.form.textureUrl
   } : {}, {
-    p: common_vendor.t($data.form.textureUrl ? "重新上传" : "选择图片"),
-    q: common_vendor.o(($event) => $options.chooseImage("texture"), "7d"),
-    r: $data.form.textureUrl
+    o: common_vendor.t($data.form.textureUrl ? "重新上传" : "选择图片"),
+    p: common_vendor.o(($event) => $options.chooseImage("texture"), "55"),
+    q: $data.form.textureUrl
   }, $data.form.textureUrl ? {
-    s: common_vendor.o(($event) => $options.clearImage("texture"), "de")
+    r: common_vendor.o(($event) => $options.clearImage("texture"), "75")
   } : {}, {
-    t: common_vendor.o(($event) => $options.chooseImage("texture"), "47"),
-    v: common_vendor.t($options.currentPleatLabel),
-    w: $data.pleatOptions,
-    x: $options.selectedPleatIndex,
-    y: common_vendor.o((...args) => $options.handlePleatChange && $options.handlePleatChange(...args), "d9"),
-    z: common_vendor.t($options.currentHeadStyleLabel),
-    A: $data.headStyleOptions,
-    B: $options.selectedHeadStyleIndex,
-    C: common_vendor.o((...args) => $options.handleHeadStyleChange && $options.handleHeadStyleChange(...args), "1d"),
-    D: $data.styleForm.includeSheer
+    s: common_vendor.o(($event) => $options.chooseImage("texture"), "8b"),
+    t: common_vendor.t($options.currentPleatLabel),
+    v: $data.pleatOptions,
+    w: $options.selectedPleatIndex,
+    x: common_vendor.o((...args) => $options.handlePleatChange && $options.handlePleatChange(...args), "32"),
+    y: common_vendor.t($options.currentHeadStyleLabel),
+    z: $data.headStyleOptions,
+    A: $options.selectedHeadStyleIndex,
+    B: common_vendor.o((...args) => $options.handleHeadStyleChange && $options.handleHeadStyleChange(...args), "58"),
+    C: $data.styleForm.includeSheer
   }, $data.styleForm.includeSheer ? {} : {}, {
-    E: common_vendor.n($data.styleForm.includeSheer ? "checkbox-box--checked" : ""),
-    F: common_vendor.o((...args) => $options.toggleIncludeSheer && $options.toggleIncludeSheer(...args), "6e"),
-    G: common_vendor.t($options.promptLength),
-    H: $data.form.prompt,
-    I: common_vendor.o(($event) => $data.form.prompt = $event.detail.value, "b9"),
-    J: common_vendor.t($options.homeView.submitText),
-    K: $data.generating,
-    L: $options.homeView.submitDisabled,
-    M: common_vendor.o((...args) => $options.submitGenerate && $options.submitGenerate(...args), "ba"),
-    N: common_vendor.o((...args) => $options.goRecharge && $options.goRecharge(...args), "1c"),
-    O: $data.resultUrl
+    D: common_vendor.n($data.styleForm.includeSheer ? "checkbox-box--checked" : ""),
+    E: common_vendor.o((...args) => $options.toggleIncludeSheer && $options.toggleIncludeSheer(...args), "5f"),
+    F: common_vendor.t($options.promptLength),
+    G: $data.form.prompt,
+    H: common_vendor.o(($event) => $data.form.prompt = $event.detail.value, "c0"),
+    I: common_vendor.t($options.homeView.submitText),
+    J: $data.generating,
+    K: $options.homeView.submitDisabled,
+    L: common_vendor.o((...args) => $options.submitGenerate && $options.submitGenerate(...args), "2a"),
+    M: common_vendor.o((...args) => $options.goRecharge && $options.goRecharge(...args), "fd"),
+    N: $data.resultUrl
   }, $data.resultUrl ? {
-    P: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "fb"),
-    Q: $data.resultUrl,
-    R: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "8a")
+    O: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "8c"),
+    P: $data.resultUrl,
+    Q: common_vendor.o(($event) => $options.previewSingle($data.resultUrl), "cd")
   } : {}, {
-    S: common_vendor.o((...args) => $options.refreshHistory && $options.refreshHistory(...args), "1a"),
-    T: !$data.hasLogin
+    R: common_vendor.o((...args) => $options.refreshHistory && $options.refreshHistory(...args), "fb"),
+    S: !$data.hasLogin
   }, !$data.hasLogin ? {} : $data.historyLoading ? {} : $data.historyList.length === 0 ? {} : {
-    W: common_vendor.f($data.historyList, (item, k0, i0) => {
+    V: common_vendor.f($data.historyList, (item, k0, i0) => {
       return {
         a: item.resultUrl || item.backgroundUrl || item.textureUrl,
         b: common_vendor.t($options.formatStatus(item.status)),
@@ -685,8 +697,8 @@ function _sfc_render(_ctx, _cache, $props, $setup, $data, $options) {
       };
     })
   }, {
-    U: $data.historyLoading,
-    V: $data.historyList.length === 0
+    T: $data.historyLoading,
+    U: $data.historyList.length === 0
   });
 }
 const Component = /* @__PURE__ */ common_vendor._export_sfc(_sfc_main, [["render", _sfc_render]]);

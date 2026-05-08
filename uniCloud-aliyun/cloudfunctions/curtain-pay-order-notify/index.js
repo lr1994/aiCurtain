@@ -16,6 +16,15 @@ function buildFailResponse(message) {
 	};
 }
 
+function normalizeNotifyPayload(event = {}) {
+	return {
+		orderNo: normalizeString(event.orderNo || event.outTradeNo),
+		tradeState: normalizeString(event.tradeState || event.trade_state),
+		transactionId: normalizeString(event.transactionId || event.transaction_id),
+		failReason: normalizeString(event.failReason || event.trade_state_desc)
+	};
+}
+
 async function ensurePointAccount(uid) {
 	const found = await accountCollection.where({ uid }).get();
 	if (Array.isArray(found.data) && found.data.length > 0) {
@@ -81,9 +90,8 @@ async function markOrderPaid(order, transactionId) {
 
 exports.main = async (event) => {
 	try {
-		const orderNo = normalizeString(event && event.orderNo);
-		const tradeState = normalizeString(event && event.tradeState);
-		const transactionId = normalizeString(event && event.transactionId);
+		const payload = normalizeNotifyPayload(event);
+		const { orderNo, tradeState, transactionId, failReason } = payload;
 
 		if (!orderNo) {
 			return buildFailResponse('订单号不能为空');
@@ -97,7 +105,8 @@ exports.main = async (event) => {
 		if (tradeState !== 'SUCCESS') {
 			await orderCollection.doc(order._id).update({
 				status: 'fail',
-				transactionId
+				transactionId,
+				failReason
 			});
 			return {
 				success: true,

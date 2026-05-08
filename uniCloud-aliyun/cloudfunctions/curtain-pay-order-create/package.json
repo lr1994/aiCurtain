@@ -6,6 +6,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "uni-id": "file:../../../uni_modules/uni-id/uniCloud/cloudfunctions/common/uni-id"
-  }
+    "curtain-default-packages": "file:../common/curtain-default-packages",
+    "uni-pay-bridge": "file:../common/uni-pay-bridge",
+    "uni-id": "file:../../../uni_modules/uni-id/uniCloud/cloudfunctions/common/uni-id",
+    "uni-open-bridge-common": "file:../../../uni_modules/uni-open-bridge-common/uniCloud/cloudfunctions/common/uni-open-bridge-common"
+  },
+  "extensions": {}
 }

@@ -2,7 +2,7 @@
 	<view class="page">
 		<view class="hero-card">
 			<view class="page-title">充值中心</view>
-			<view class="page-desc">当前环境默认走模拟支付，便于先验证订单创建、到账加点和订单记录。</view>
+			<view class="page-desc">选择点数套餐后可直接拉起微信支付，支付结果以服务端到账状态为准。</view>
 		</view>
 
 		<view class="panel-card">
@@ -137,58 +137,25 @@ export default {
 				if (!result.success) {
 					throw new Error(result.message || '创建订单失败');
 				}
-
-				if (result.paymentParams && result.paymentParams.mock) {
-					const modalResult = await new Promise((resolve) => {
-						uni.showModal({
-							title: '模拟支付',
-							content: `已创建订单 ${result.orderNo}，当前环境使用模拟支付，是否直接模拟支付成功？`,
-							confirmText: '立即到账',
-							cancelText: '稍后处理',
-							success: resolve
-						});
-					});
-					if (modalResult.confirm) {
-						await this.mockPaySuccess(result.orderNo);
-					} else {
-						uni.showToast({
-							title: '订单已创建，可在订单记录中查看',
-							icon: 'none'
-						});
-					}
-					return;
-				}
-
+				await uni.requestPayment({
+					provider: 'wxpay',
+					...(result.paymentParams || {})
+				});
 				uni.showToast({
-					title: '订单已创建，请继续支付',
+					title: '支付成功，正在同步到账结果',
 					icon: 'none'
 				});
+				this.loadPackages();
 			} catch (error) {
+				const errorMessage = this.normalizeString(error && (error.errMsg || error.message));
+				const isCancel = /cancel/i.test(errorMessage) || /取消/.test(errorMessage);
 				uni.showToast({
-					title: error.message || '创建订单失败',
+					title: isCancel ? '已取消支付' : (errorMessage || '支付失败'),
 					icon: 'none'
 				});
 			} finally {
 				this.payingPackageId = '';
 			}
-		},
-		async mockPaySuccess(orderNo) {
-			const res = await uniCloud.callFunction({
-				name: 'curtain-pay-order-notify',
-				data: {
-					orderNo,
-					tradeState: 'SUCCESS',
-					transactionId: `mock-${Date.now()}`
-				}
-			});
-			const result = res.result || {};
-			if (!result.success) {
-				throw new Error(result.message || '模拟支付失败');
-			}
-			uni.showToast({
-				title: '模拟支付成功，点数已到账',
-				icon: 'success'
-			});
 		},
 		async submitManualApply() {
 			if (!this.hasLogin) {

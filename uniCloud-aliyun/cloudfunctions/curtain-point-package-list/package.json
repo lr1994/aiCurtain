@@ -3,6 +3,9 @@
   "version": "1.0.0",
   "description": "窗帘点数套餐目录云函数",
   "main": "index.js",
+  "dependencies": {
+    "curtain-default-packages": "file:../common/curtain-default-packages"
+  },
   "author": "",
   "license": "ISC"
 }

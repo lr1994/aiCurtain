@@ -2,7 +2,7 @@ module.exports = [
 	{
 		_id: 'default-package-trial',
 		title: '体验包',
-		priceFen: 990,
+		priceFen: 1,
 		points: 10,
 		bonusPoints: 0,
 		sort: 10,

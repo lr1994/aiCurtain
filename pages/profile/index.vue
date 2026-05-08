@@ -23,6 +23,7 @@
 			</view>
 		</view>
 
+
 		<view class="entry-list">
 			<view class="entry-item" @click="goPage('/pages/profile/points')">
 				<text>点数流水</text>
@@ -37,10 +38,12 @@
 				<text>前往</text>
 			</view>
 		</view>
+		<button v-if="hasLogin" class="logout-btn" @click="confirmLogout">退出登录</button>
 	</view>
 </template>
 
 <script>
+import { mutations } from '@/uni_modules/uni-id-pages/common/store.js';
 import pointSummaryModels from '@/common/curtain-app/frontend/point-summary.js';
 
 const {
@@ -78,6 +81,21 @@ export default {
 			const redirectUrl = encodeURIComponent('/pages/profile/index');
 			uni.navigateTo({
 				url: `/uni_modules/uni-id-pages/pages/login/login-withoutpwd?uniIdRedirectUrl=${redirectUrl}`
+			});
+		},
+		confirmLogout() {
+			uni.showModal({
+				title: '确认退出',
+				content: '退出后可重新登录其他账号',
+				confirmText: '退出登录',
+				success: ({ confirm }) => {
+					if (!confirm) {
+						return;
+					}
+					this.summary = createEmptyPointSummary();
+					this.hasLogin = false;
+					mutations.logout();
+				}
 			});
 		},
 		async loadPointSummary() {
@@ -202,6 +220,17 @@ export default {
 	border-radius: 999rpx;
 	background: #f3e2cf;
 	color: #463526;
+}
+
+.logout-btn {
+	margin-top: 24rpx;
+	border: 0;
+	border-radius: 999rpx;
+	background: #fff5ee;
+	color: #8f4a2a;
+	font-size: 28rpx;
+	padding: 20rpx 0;
+	line-height: 1.2;
 }
 
 .entry-list {

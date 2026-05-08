@@ -79,6 +79,7 @@ function createHarness(options = {}) {
 	const orders = (options.orders || []).map((item) => ({ ...item }));
 	const pointAccounts = (options.pointAccounts || []).map((item) => ({ ...item }));
 	const pointFlows = [];
+	const users = (options.users || []).map((item) => ({ ...item }));
 
 	function makeQueryChain(list, filter = {}) {
 		const filteredList = list.filter((item) => {
@@ -207,6 +208,19 @@ function createHarness(options = {}) {
 		}
 	};
 
+	const userCollection = {
+		doc(id) {
+			return {
+				async get() {
+					const target = users.find((item) => item._id === id);
+					return {
+						data: target ? [{ ...target }] : []
+					};
+				}
+			};
+		}
+	};
+
 	const uniCloud = {
 		database() {
 			return {
@@ -222,6 +236,9 @@ function createHarness(options = {}) {
 					}
 					if (name === 'curtain_point_flow') {
 						return pointFlowCollection;
+					}
+					if (name === 'uni-id-users') {
+						return userCollection;
 					}
 					throw new Error(`unexpected collection: ${name}`);
 				}
@@ -239,7 +256,7 @@ function createHarness(options = {}) {
 		}
 	};
 
-	const uniId = {
+	const uniId = options.uniId || {
 		async checkToken() {
 			return {
 				uid: 'user-1',
@@ -342,6 +359,50 @@ test('create order stores package points and amount before payment', async () =>
 	assert.equal(harness.orders[0].amountFen, 990);
 	assert.equal(harness.orders[0].status, 'init');
 	assert.equal(result.paymentParams.mock, true);
+});
+
+test('create order resolves weixin openid from uni-id user profile when token payload only contains uid', async () => {
+	const harness = createHarness({
+		env: {
+			CURTAIN_PAYMENT_MODE: 'real'
+		},
+		users: [
+			{
+				_id: 'user-1',
+				wx_openid: {
+					'mp-weixin': 'openid-from-profile'
+				}
+			}
+		],
+		uniId: {
+			async checkToken() {
+				return {
+					uid: 'user-1'
+				};
+			}
+		},
+		uniPayBridge: {
+			async createMiniProgramOrder({ openid }) {
+				return {
+					provider: 'wxpay',
+					timeStamp: '1714800000',
+					nonceStr: 'nonce-demo',
+					package: `prepay_id=${openid}`,
+					signType: 'RSA',
+					paySign: 'signed-demo',
+					thirdOrderNo: 'upay-002'
+				};
+			}
+		}
+	});
+
+	const result = await harness.createOrder.main({
+		uniIdToken: 'token',
+		packageId: 'pkg-1'
+	});
+
+	assert.equal(result.success, true);
+	assert.equal(result.paymentParams.package, 'prepay_id=openid-from-profile');
 });
 
 test('notify success updates order once and increments point balance once', async () => {

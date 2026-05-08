@@ -7,6 +7,7 @@ const { createMiniProgramOrder } = require('uni-pay-bridge');
 const db = uniCloud.database();
 const packageCollection = db.collection('curtain_point_package');
 const orderCollection = db.collection('curtain_pay_order');
+const userCollection = db.collection('uni-id-users');
 
 function normalizeString(value) {
 	return typeof value === 'string' ? value.trim() : '';
@@ -35,6 +36,51 @@ async function getCurrentUser(event) {
 		}
 		throw new Error('登录状态已失效，请重新登录');
 	}
+}
+
+async function getCurrentUserProfile(uid) {
+	const normalizedUid = normalizeString(uid);
+	if (!normalizedUid) {
+		return {};
+	}
+	const profileResult = await userCollection.doc(normalizedUid).get();
+	if (profileResult && Array.isArray(profileResult.data) && profileResult.data.length > 0) {
+		return profileResult.data[0] || {};
+	}
+	if (profileResult && profileResult.data && !Array.isArray(profileResult.data)) {
+		return profileResult.data;
+	}
+	return {};
+}
+
+function resolveWeixinOpenid(value) {
+	if (typeof value === 'string') {
+		return normalizeString(value);
+	}
+	if (!value || typeof value !== 'object') {
+		return '';
+	}
+	const exactKeys = ['mp-weixin', 'mp', 'weixin-mp'];
+	for (const key of exactKeys) {
+		const matched = normalizeString(value[key]);
+		if (matched) {
+			return matched;
+		}
+	}
+	const fuzzyKeys = Object.keys(value).filter((key) => /^mp([_-]|$)|^mp-weixin([_-]|$)|^weixin-mp([_-]|$)/.test(key));
+	for (const key of fuzzyKeys) {
+		const matched = normalizeString(value[key]);
+		if (matched) {
+			return matched;
+		}
+	}
+	for (const key of Object.keys(value)) {
+		const matched = normalizeString(value[key]);
+		if (matched) {
+			return matched;
+		}
+	}
+	return '';
 }
 
 function normalizePackage(item = {}) {
@@ -77,8 +123,9 @@ function buildOrderNo() {
 	return `CP${Date.now()}${Math.random().toString().slice(2, 6)}`;
 }
 
-async function buildPaymentPayload({ auth, pkg, orderNo }) {
-	const mode = normalizeString(process.env.CURTAIN_PAYMENT_MODE) || 'mock';
+async function buildPaymentPayload({ auth, userProfile, pkg, orderNo }) {
+	// const mode = normalizeString(process.env.CURTAIN_PAYMENT_MODE) || 'mock';
+	const mode = 'real'
 	if (mode === 'mock') {
 		return {
 			paymentParams: {
@@ -92,7 +139,10 @@ async function buildPaymentPayload({ auth, pkg, orderNo }) {
 			thirdOrderNo: ''
 		};
 	}
-	const openid = normalizeString(auth.openid || auth.wx_openid || auth.mp_openid);
+	const openid = normalizeString(auth.openid || auth.mp_openid)
+		|| resolveWeixinOpenid(auth.wx_openid)
+		|| normalizeString(userProfile.openid || userProfile.mp_openid)
+		|| resolveWeixinOpenid(userProfile.wx_openid);
 	if (!openid) {
 		throw new Error('未获取到微信用户标识，请重新登录后再试');
 	}
@@ -116,6 +166,10 @@ async function buildPaymentPayload({ auth, pkg, orderNo }) {
 exports.main = async (event) => {
 	try {
 		const auth = await getCurrentUser(event || {});
+		console.log('auth', JSON.stringify(auth))
+console.log('userProfile', JSON.stringify(userProfile))
+
+		const userProfile = await getCurrentUserProfile(auth.uid);
 		const pkg = await getActivePackage(event && event.packageId);
 		const orderNo = buildOrderNo();
 		const points = pkg.points + pkg.bonusPoints;
@@ -137,6 +191,7 @@ exports.main = async (event) => {
 		});
 		const paymentPayload = await buildPaymentPayload({
 			auth,
+			userProfile,
 			pkg,
 			orderNo
 		});

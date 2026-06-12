@@ -78,6 +78,7 @@ export default {
 			this.hasLogin = !!uid && tokenExpired > Date.now();
 		},
 		goLogin() {
+			// 使用免密登录页面作为手动登录入口
 			const redirectUrl = encodeURIComponent('/pages/profile/index');
 			uni.navigateTo({
 				url: `/uni_modules/uni-id-pages/pages/login/login-withoutpwd?uniIdRedirectUrl=${redirectUrl}`

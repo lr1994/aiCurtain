@@ -74,6 +74,9 @@ export default {
 	onShow() {
 		this.syncLoginState();
 		if (this.hasLogin) {
+			// 获取当前用户信息
+			const userInfo = uniCloud.getCurrentUserInfo();
+			console.log('当前用户信息:', userInfo);
 			this.loadPackages();
 		}
 	},
@@ -126,6 +129,7 @@ export default {
 		},
 		async createRechargeOrder(item) {
 			this.payingPackageId = item._id;
+			console.log('item',item)
 			try {
 				const res = await uniCloud.callFunction({
 					name: 'curtain-pay-order-create',
